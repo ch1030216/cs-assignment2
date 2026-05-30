@@ -1,51 +1,38 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 
 export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
   const [inputValue, setInputValue] = useState("");
-  const inputRefs = useRef({}); // 각 투두 항목의 input 접근을 위한 ref
+  const [editingId, setEditingId] = useState(null); // 현재 수정 중인 항목의 ID
 
   const currentTodos = todos && todos[selectedDate] ? todos[selectedDate] : [];
 
+  // 1. 상단 입력창으로 추가
   const handleAddTodo = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-
     const newTodo = { id: Date.now(), text: inputValue, completed: false };
     setTodos({ ...todos, [selectedDate]: [...currentTodos, newTodo] });
     setInputValue("");
   };
 
-  const handleTodoChange = (id, newText) => {
+  // 2. 리스트 내용 수정 (메모장 기능)
+  const handleEditChange = (id, newText) => {
     const updated = currentTodos.map((t) => (t.id === id ? { ...t, text: newText } : t));
     setTodos({ ...todos, [selectedDate]: updated });
   };
 
-  // 엔터 입력 시 새 투두 생성 및 커서 이동
-  const handleKeyDown = (e, id) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const newTodo = { id: Date.now(), text: "", completed: false };
-      const index = currentTodos.findIndex((t) => t.id === id);
-      const updated = [...currentTodos];
-      updated.splice(index + 1, 0, newTodo);
-      setTodos({ ...todos, [selectedDate]: updated });
-      
-      // 다음 항목으로 포커스 이동을 위해 짧은 지연 후 실행
-      setTimeout(() => {
-        inputRefs.current[newTodo.id]?.focus();
-      }, 0);
-    }
+  // 3. 토글 및 삭제 등 기타 기능
+  const handleToggle = (id) => {
+    const updated = currentTodos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
+    setTodos({ ...todos, [selectedDate]: updated });
   };
 
   return (
     <div className="w-full h-full flex flex-col font-sans">
-      <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>
-        Todo-list
-      </h2>
+      <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>Todo-list</h2>
 
-      {/* 기존의 추가 입력창 */}
       <form onSubmit={handleAddTodo} className="mb-4">
         <input
           type="text"
@@ -56,20 +43,32 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
         />
       </form>
 
-      {/* 리스트 영역 */}
       <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto">
         {currentTodos.map((todo) => (
-          <div key={todo.id} className="flex items-center gap-3">
-            <div className={`w-4 h-4 rounded border ${todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"}`} />
-            <input
-              ref={(el) => (inputRefs.current[todo.id] = el)}
-              type="text"
-              value={todo.text}
-              onChange={(e) => handleTodoChange(todo.id, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, todo.id)}
-              className="flex-1 bg-transparent outline-none text-xs text-slate-700"
-              placeholder="내용을 입력하세요..."
+          <div key={todo.id} className="flex items-center gap-3 group">
+            {/* 체크박스 */}
+            <div 
+              onClick={() => handleToggle(todo.id)}
+              className={`w-4 h-4 rounded border cursor-pointer flex-shrink-0 ${todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"}`} 
             />
+            
+            {/* 메모장처럼 동작하는 텍스트 영역 */}
+            {editingId === todo.id ? (
+              <input
+                autoFocus
+                value={todo.text}
+                onChange={(e) => handleEditChange(todo.id, e.target.value)}
+                onBlur={() => setEditingId(null)} // 포커스 잃으면 수정 모드 종료
+                className="flex-1 bg-transparent outline-none text-xs text-slate-700 border-b border-sky-300"
+              />
+            ) : (
+              <span 
+                onClick={() => setEditingId(todo.id)}
+                className={`flex-1 text-xs cursor-text ${todo.completed ? "line-through text-slate-400" : "text-slate-700"}`}
+              >
+                {todo.text || "내용을 입력하세요..."}
+              </span>
+            )}
           </div>
         ))}
       </div>
