@@ -15,7 +15,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
       id: Date.now(),
       text: newTitle,
       date: newDate,      // YYYY-MM-DD 포맷
-      completed: false,   // 완료 체크박스 상태값 기본 설정
+      completed: false,
     };
 
     setDeadlines([...deadlines, newDeadline]);
@@ -23,9 +23,8 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
     setNewDate("");
   };
 
-  // 2. 데드라인 완료 체크박스 토글 함수 (이벤트 전파 방지 적용!)
+  // 2. 체크박스 토글 함수
   const handleToggleComplete = (id, e) => {
-    // ⭐️ 중요: 체크박스 클릭 이벤트가 다른 부모 요소로 번져 날짜 변경을 방해하지 않도록 차단합니다.
     e.stopPropagation(); 
     const updated = deadlines.map((dl) =>
       dl.id === id ? { ...dl, completed: !dl.completed } : dl
@@ -33,22 +32,28 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
     setDeadlines(updated);
   };
 
-  // 3. 데드라인 삭제 함수 (이벤트 전파 방지 적용!)
+  // 3. 데드라인 삭제 함수
   const handleDeleteDeadline = (id, e) => {
-    // ⭐️ 중요: 버튼 클릭 이벤트가 다른 부모 요소로 번져 날짜 변경을 방해하지 않도록 차단합니다.
     e.stopPropagation(); 
     const filtered = deadlines.filter((dl) => dl.id !== id);
     setDeadlines(filtered);
   };
 
-  // D-Day 계산 함수
+  // ⭐️ [버그 해결 핵심] D-Day 계산 함수 수정
+  // 기존의 고정된 오늘 날짜(new Date()) 대신, 달력에서 클릭한 `selectedDate`를 기준으로 디데이를 계산합니다!
   const calculateDDay = (targetDate) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    if (!selectedDate) return "D-Day";
+
+    // 달력에서 선택된 날짜 기준점 설정 (시차 에러 방지를 위해 시간 초기화)
+    const baseDate = new Date(selectedDate);
+    baseDate.setHours(0, 0, 0, 0);
+
+    // 할 일(데드라인)의 마감일 날짜 설정
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
 
-    const diffTime = target - today;
+    // 두 날짜의 차이 계산
+    const diffTime = target - baseDate;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return "D-Day";
@@ -74,7 +79,6 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
               >
                 {/* 왼쪽 영역: 체크박스 + 디데이 배지 + 마감 내용 */}
                 <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
-                  {/* ☑️ 완료 체크박스 */}
                   <input
                     type="checkbox"
                     checked={dl.completed || false}
@@ -82,6 +86,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                     className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500 cursor-pointer flex-shrink-0"
                   />
                   
+                  {/* ⭐️ 실시간으로 변하는 디데이가 반영됩니다 */}
                   <span className={`text-xs font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${
                     dl.completed 
                       ? "bg-slate-200 text-slate-500 line-through decoration-slate-400" 
@@ -97,7 +102,6 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                   </p>
                 </div>
                 
-                {/* ❌ 우측 정렬 삭제 버튼 (이벤트 전파 방지 적용) */}
                 <button
                   type="button"
                   onClick={(e) => handleDeleteDeadline(dl.id, e)}
