@@ -26,8 +26,10 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
   };
 
   return (
-    <div className={`w-full h-full flex flex-col justify-between p-1 select-none font-sans ${darkMode ? "bg-slate-950 text-slate-200" : "bg-white text-slate-800"}`}>
-      <div className="flex justify-between items-center mb-4">
+<div className={`w-full h-full flex flex-col justify-between p-1 select-none font-sans transition-colors ${
+    darkMode ? "bg-slate-900/90 text-slate-200" : "bg-white text-slate-800"
+  }`}>
+          <div className="flex justify-between items-center mb-4">
         <h2 className={`text-base font-bold ${darkMode ? "text-sky-400" : "text-sky-800"}`}>
           Calendar
         </h2>

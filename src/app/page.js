@@ -99,17 +99,16 @@ export default function Home() {
               />
             </div>
 
-            <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${
-              darkMode ? "bg-slate-800/50 border-slate-700" : "bg-sky-50/50 border-sky-100/60"
-            }`}>
-              <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>Deadline</h2>
-              <DeadlineList 
-                selectedDate={selectedDate} 
-                deadlines={deadlines} 
-                setDeadlines={setDeadlines} 
-                darkMode={darkMode}
-              />
-            </div>
+            <div className={`p-5 rounded-2xl shadow-sm border transition-colors ${
+  darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-sky-100"
+}`}>
+  <CalendarBox 
+    selectedDate={selectedDate} 
+    setSelectedDate={setSelectedDate} 
+    deadlineData={deadlines}
+    darkMode={darkMode}
+  />
+</div>
           </div>
         </div>
       </div>
