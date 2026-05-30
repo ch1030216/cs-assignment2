@@ -46,13 +46,16 @@ export default function MusicPlayer({ darkMode, selectedDate }) {
         darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-sky-100"
       }`}>
         <div className="flex items-center gap-3 overflow-hidden flex-1 mr-2">
+          {/* 재생/일시정지 버튼: 설정 버튼과 스타일 통일(SVG) */}
           <button 
             onClick={() => setIsPlaying(!isPlaying)} 
-            className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full shadow-md transition-all ${
-              isPlaying ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-500"
-            }`}
+            className="p-2 text-slate-400 hover:text-sky-500 transition-colors"
           >
-            {isPlaying ? "❚❚" : "▶"}
+            {isPlaying ? (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            )}
           </button>
           
           <div className="overflow-hidden w-full h-4 relative">
@@ -62,11 +65,9 @@ export default function MusicPlayer({ darkMode, selectedDate }) {
           </div>
         </div>
 
+        {/* 설정 버튼: 톱니바퀴 SVG */}
         <button onClick={() => setShowInput(!showInput)} className="p-2 text-slate-400 hover:text-sky-500 transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065zM15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
         </button>
       </div>
 
