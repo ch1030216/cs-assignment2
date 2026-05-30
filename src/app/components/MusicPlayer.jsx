@@ -6,11 +6,40 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
   const currentLink = musicData[selectedDate] || "";
   const [showInput, setShowInput] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [videoTitle, setVideoTitle] = useState("등록된 음악이 없습니다.");
+  const [isLoading, setIsLoading] = useState(false);
   const iframeRef = useRef(null);
 
+  // 날짜가 바뀌면 상태 초기화 및 해당 날짜의 음악 제목 가져오기
   useEffect(() => {
     setIsPlaying(false);
-  }, [selectedDate]);
+    fetchYoutubeTitle(currentLink);
+  }, [selectedDate, currentLink]);
+
+  // 유튜브 oEmbed API를 사용해 실제 동영상 제목을 가져오는 함수
+  const fetchYoutubeTitle = async (url) => {
+    if (!url) {
+      setVideoTitle("등록된 음악이 없습니다.");
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      // 유튜브 공식 oEmbed 엔드포인트를 통해 JSON 데이터 요청
+      const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      if (res.ok) {
+        const data = await res.json();
+        setVideoTitle(data.title); // 실제 유튜브 동영상 제목 세팅
+      } else {
+        setVideoTitle("재생 대기 중인 음악");
+      }
+    } catch (error) {
+      console.error("유튜브 제목 가져오기 실패:", error);
+      setVideoTitle("재생 대기 중인 음악");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleUrlChange = (e) => {
     setMusicData({
@@ -46,15 +75,30 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
     setIsPlaying(!isPlaying);
   };
 
-  // 링크 주소에서 비디오 ID나 핵심 문구만 추출하여 제목처럼 보여주는 함수
-  const getMusicTitle = () => {
-    if (!currentLink) return "등록된 음악이 없습니다.";
-    if (isPlaying) return "🎵 지정된 음악 재생 중";
-    return "⏱️ 음악 재생 대기 중";
-  };
-
   return (
     <div className="flex flex-col gap-3 w-full h-full justify-between relative">
+      {/* 글로벌 스타일 태그를 이용해 CSS 전광판 애니메이션(Marquee) 주입 */}
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
+        }
+        .marquee-container {
+          overflow: hidden;
+          white-space: nowrap;
+          display: flex;
+        }
+        .marquee-content {
+          display: inline-block;
+          padding-right: 2rem;
+          animation: marquee 15s linear infinite;
+        }
+        /* 음악이 정지 상태일 때는 전광판이 멈추도록 설정 */
+        .marquee-paused {
+          animation-play-state: paused;
+        }
+      `}</style>
+
       {embedUrl && (
         <div className="w-0 h-0 absolute opacity-0 pointer-events-none">
           <iframe
@@ -66,12 +110,14 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
       )}
 
       <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between p-4 shadow-inner min-h-[100px]">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between w-full gap-4 overflow-hidden">
+          
+          {/* 왼쪽: 재생 버튼과 텍스트 영역 */}
+          <div className="flex items-center gap-4 flex-1 overflow-hidden">
             <button
               onClick={togglePlay}
-              disabled={!embedUrl}
-              className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all active:scale-95 ${
+              disabled={!embedUrl || isLoading}
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0 transition-all active:scale-95 ${
                 !embedUrl 
                   ? "bg-slate-300 cursor-not-allowed"
                   : isPlaying 
@@ -79,19 +125,33 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
                     : "bg-emerald-500 hover:bg-emerald-600 shadow-md"
               }`}
             >
-              {isPlaying ? "⏸" : "▶"}
+              {isLoading ? "⏳" : isPlaying ? "⏸" : "▶"}
             </button>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-slate-700 tracking-tight">
-                {getMusicTitle()}
-              </span>
+            
+            {/* ⭐️ 전광판 흐르기 효과(Marquee)가 구현된 타이틀 영역 */}
+            <div className="flex flex-col flex-1 overflow-hidden">
+              {currentLink && videoTitle.length > 14 ? (
+                <div className="marquee-container w-[160px] sm:w-[200px]">
+                  <div className={`marquee-content text-sm font-bold text-slate-700 tracking-tight ${!isPlaying ? "marquee-paused" : ""}`}>
+                    {videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </div>
+                  {/* 무한 반복 연결을 위해 동일한 텍스트 복제 배치 */}
+                  <div className={`marquee-content text-sm font-bold text-slate-700 tracking-tight ${!isPlaying ? "marquee-paused" : ""}`} aria-hidden="true">
+                    {videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  </div>
+                </div>
+              ) : (
+                <span className="text-sm font-bold text-slate-700 tracking-tight truncate">
+                  {isLoading ? "음악 정보 불러오는 중..." : videoTitle}
+                </span>
+              )}
             </div>
           </div>
 
-          {/* 깔끔한 모던 스타일 SVG 설정 톱니바퀴 아이콘 버튼 */}
+          {/* 오른쪽: 모던 스타일 SVG 설정 버튼 */}
           <button
             onClick={() => setShowInput(!showInput)}
-            className={`p-2 rounded-lg border transition-all ${
+            className={`p-2 rounded-lg border flex-shrink-0 transition-all ${
               showInput 
                 ? "bg-slate-800 text-white border-slate-800" 
                 : "bg-white text-slate-400 hover:text-slate-600 border-slate-200 shadow-sm"
