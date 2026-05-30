@@ -62,27 +62,28 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
         ) : (
           [...deadlines]
             .sort((a, b) => new Date(a.date) - new Date(b.date))
+            // --- 필터링 로직 적용 시작 ---
+            .filter((dl) => {
+              const dDayInfo = calculateDDay(dl.date);
+              // 완료되었거나, 이미 지난 마감일(isOverdue)인 경우 제외
+              return !dl.completed && !dDayInfo.isOverdue;
+            })
+            // --- 필터링 로직 적용 끝 ---
             .map((dl) => {
               const dDayInfo = calculateDDay(dl.date);
               
               let badgeStyle = darkMode ? "bg-sky-950 text-sky-400 border-sky-800" : "bg-sky-100 text-sky-600 border-sky-200";
-              if (dDayInfo.isOverdue && !dl.completed) {
-                badgeStyle = darkMode ? "bg-orange-950/70 text-orange-400 border-orange-900" : "bg-orange-50 text-orange-600 border-orange-200 font-extrabold";
-              }
 
               return (
                 <div
                   key={dl.id}
                   className={`flex items-center justify-between border rounded-xl p-2 shadow-sm group transition-all ${
-                    dl.completed
-                      ? "opacity-40"
-                      : darkMode 
-                        ? "bg-slate-800 border-slate-700/60 hover:border-slate-600" 
-                        : "bg-white border-sky-100/80 hover:border-sky-300"
+                    darkMode 
+                      ? "bg-slate-800 border-slate-700/60 hover:border-slate-600" 
+                      : "bg-white border-sky-100/80 hover:border-sky-300"
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
-                    {/* 마감일 알림창 내부 체크박스 다크모드 하얗게 뜨는 현상 완전 차단 */}
                     <div className="relative flex items-center justify-center flex-shrink-0">
                       <input
                         type="checkbox"
@@ -94,9 +95,6 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                             : "bg-white border-sky-300 checked:border-sky-500"
                         }`}
                       />
-                      {dl.completed && (
-                        <span className="absolute text-white text-[10px] pointer-events-none font-bold">✓</span>
-                      )}
                     </div>
                     
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 border ${badgeStyle}`}>
@@ -104,9 +102,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                     </span>
                     
                     <p className={`text-xs font-medium truncate flex-1 ${
-                      dl.completed 
-                        ? "line-through text-slate-500" 
-                        : darkMode ? "text-slate-200" : "text-sky-900"
+                      darkMode ? "text-slate-200" : "text-sky-900"
                     }`} title={dl.text}>
                       {dl.text}
                     </p>
