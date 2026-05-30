@@ -104,7 +104,7 @@ export default function Home() {
             <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${
               darkMode ? "bg-slate-800/50 border-slate-700" : "bg-sky-50/50 border-sky-100/60"
             }`}>
-              <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>마감일 알림창</h2>
+              <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>Deadline</h2>
               <DeadlineList 
                 selectedDate={selectedDate} 
                 deadlines={deadlines} 
