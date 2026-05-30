@@ -98,7 +98,7 @@ export default function MusicPlayer({ darkMode, selectedDate }) {
           0% { transform: translate(100%, 0); } 
           100% { transform: translate(-100%, 0); } 
         }
-        .animate-marquee { animation: marquee 20s linear infinite; }
+        .animate-marquee { animation: marquee 30s linear infinite; }
       `}</style>
     </div>
   );
