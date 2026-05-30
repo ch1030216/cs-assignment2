@@ -1,21 +1,17 @@
-export default function MusicPlayer({ selectedDate, musicData, setMusicData, darkMode }) {
-  const currentMusic = musicData[selectedDate] || { title: "재생 중인 곡 없음", status: "STOP" };
+"use client";
 
-  const handlePlayToggle = () => {
-    setMusicData({ ...musicData, [selectedDate]: { ...currentMusic, status: currentMusic.status === "PLAY" ? "STOP" : "PLAY" } });
-  };
+import { useState } from "react";
+
+export default function MusicPlayer({ darkMode }) {
+  const [videoTitle, setVideoTitle] = useState("선택된 음악이 없습니다.");
 
   return (
-    <div className="border-t pt-4 mt-4">
-      <h3 className="font-bold mb-2">Today's Music</h3>
-      <div className={`p-3 rounded-lg flex justify-between items-center ${darkMode ? "bg-slate-800" : "bg-sky-50"}`}>
-        <span className="text-sm font-medium">{currentMusic.title}</span>
-        <div className="flex gap-2">
-          <button onClick={handlePlayToggle} className="text-xs border px-2 py-1 rounded">
-            {currentMusic.status === "PLAY" ? "일시정지" : "재생"}
-          </button>
-          <button className="text-xs border px-2 py-1 rounded">설정</button>
-        </div>
+    <div className="w-full">
+      <div className={`p-3 rounded-xl border flex items-center gap-3 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-sky-100"}`}>
+        <button className="w-8 h-8 bg-sky-500 text-white rounded-full">▶</button>
+        <p className={`text-xs font-bold ${darkMode ? "text-slate-200" : "text-sky-900"}`}>
+          {videoTitle}
+        </p>
       </div>
     </div>
   );
