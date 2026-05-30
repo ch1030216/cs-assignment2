@@ -1,78 +1,36 @@
-export default function TodoList({ selectedDate, todoData, setTodoData }) {
-  // 현재 선택된 날짜의 투두 배열 가져오기 (없으면 빈 기본값 생성)
-  const currentTodos = todoData[selectedDate] || [{ id: Date.now(), text: "", checked: false }];
+"use client";
 
-  const updateTodos = (newTodos) => {
+import { useEffect, useRef } from "react";
+
+export default function TodoList({ selectedDate, todoData, setTodoData }) {
+  // 현재 날짜의 투두 텍스트 가져오기 (없으면 빈 문자열)
+  const currentText = todoData[selectedDate] || "";
+  const textareaRef = useRef(null);
+
+  // 글자 수에 따라 높이가 자동으로 늘어나도록 조절하는 함수
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [currentText]);
+
+  const handleChange = (e) => {
     setTodoData({
       ...todoData,
-      [selectedDate]: newTodos
+      [selectedDate]: e.target.value,
     });
   };
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const newTodo = { id: Date.now(), text: "", checked: false };
-      const updated = [...currentTodos];
-      updated.splice(index + 1, 0, newTodo);
-      updateTodos(updated);
-
-      // 다음 포커스 처리를 위해 약간의 딜레이 후 다음 input에 포커스
-      setTimeout(() => {
-        const inputs = document.querySelectorAll(".todo-input");
-        if (inputs[index + 1]) inputs[index + 1].focus();
-      }, 10);
-    } 
-    
-    if (e.key === "Backspace" && currentTodos[index].text === "") {
-      e.preventDefault();
-      if (currentTodos.length > 1) {
-        const updated = currentTodos.filter((_, i) => i !== index);
-        updateTodos(updated);
-        
-        // 지워지면 이전 input으로 포커스 이동
-        setTimeout(() => {
-          const inputs = document.querySelectorAll(".todo-input");
-          if (inputs[index - 1]) inputs[index - 1].focus();
-        }, 10);
-      }
-    }
-  };
-
-  const handleChange = (index, value) => {
-    const updated = [...currentTodos];
-    updated[index].text = value;
-    updateTodos(updated);
-  };
-
-  const handleCheck = (index) => {
-    const updated = [...currentTodos];
-    updated[index].checked = !updated[index].checked;
-    updateTodos(updated);
-  };
-
   return (
-    <div className="flex flex-col gap-3">
-      {currentTodos.map((todo, index) => (
-        <div key={todo.id} className="flex items-center gap-3">
-          <input 
-            type="checkbox" 
-            checked={todo.checked} 
-            onChange={() => handleCheck(index)}
-            className="w-4 h-4 rounded text-slate-800 focus:ring-slate-500 cursor-pointer"
-          />
-          <input
-            type="text"
-            value={todo.text}
-            onChange={(e) => handleChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            placeholder="할 일 입력 (Enter로 추가, 빈 칸에서 Backspace로 삭제)"
-            className={`todo-input flex-1 bg-transparent border-b border-transparent focus:border-slate-300 focus:outline-none text-sm pb-0.5 ${
-              todo.checked ? "line-through text-slate-400" : "text-slate-700"
-            }`}
-          />
-        </div>
-      ))}
+    <div className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 min-h-[250px] shadow-inner">
+      <textarea
+        ref={textareaRef}
+        value={currentText}
+        onChange={handleChange}
+        placeholder="할 일을 입력하세요.&#10;(Enter를 누르면 바로 다음 줄에 이어서 작성할 수 있습니다)"
+        className="w-full bg-transparent border-none focus:outline-none text-sm text-slate-700 leading-relaxed resize-none overflow-hidden min-h-[200px]"
+      />
     </div>
   );
 }
