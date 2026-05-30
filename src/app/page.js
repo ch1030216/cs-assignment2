@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import CalendarBox from "./components/CalendarBox";
 import TodoList from "./components/TodoList";
@@ -10,28 +9,36 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState("2026-05-30");
   const [todos, setTodos] = useState({ "2026-05-30": [] });
-  const [deadlines, setDeadlines] = useState([]);
 
   return (
-    <div className={`min-h-screen p-10 flex flex-col items-center transition-colors ${darkMode ? "bg-slate-950" : "bg-sky-50"}`}>
-      <button className="mb-4 text-xs font-bold" onClick={() => setDarkMode(!darkMode)}>
-        {darkMode ? "Light Mode" : "Dark Mode"}
-      </button>
+    <main className={`min-h-screen p-8 transition-colors ${darkMode ? "bg-slate-950" : "bg-sky-50"}`}>
+      {/* 2. 다크모드 스위치 */}
+      <div className="flex justify-end mb-4">
+        <label className="flex items-center gap-2 cursor-pointer text-sm font-bold">
+          <input type="checkbox" className="toggle" checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
+          <span className={darkMode ? "text-white" : "text-slate-800"}>Dark Mode</span>
+        </label>
+      </div>
 
-      <div className="w-full max-w-7xl grid grid-cols-2 gap-6">
-        <div className="p-5 rounded-2xl border shadow-sm bg-white border-sky-100">
-          <CalendarBox selectedDate={selectedDate} setSelectedDate={setSelectedDate} deadlineData={deadlines} darkMode={darkMode} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 왼쪽: 캘린더 */}
+        <div className={`p-6 rounded-3xl border shadow-sm ${darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-sky-100"}`}>
+          <CalendarBox selectedDate={selectedDate} setSelectedDate={setSelectedDate} darkMode={darkMode} />
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className={`p-5 rounded-2xl border ${darkMode ? "bg-slate-900 border-slate-700" : "bg-white border-sky-100"}`}>
-            <TodoList selectedDate={selectedDate} todos={todos} setTodos={setTodos} darkMode={darkMode} />
+        {/* 오른쪽: 투두, 다이어리, 음악, 데드라인 */}
+        <div className="md:col-span-2 flex flex-col gap-6">
+          <TodoList selectedDate={selectedDate} todos={todos} setTodos={setTodos} darkMode={darkMode} />
+          
+          <div className={`p-6 rounded-3xl border ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-sky-100"}`}>
+            <h2 className="font-bold mb-2">Diary</h2>
+            <textarea className="w-full h-32 p-2 border rounded-xl bg-transparent" placeholder="일기를 기록하세요..." />
           </div>
-          <div className={`p-5 rounded-2xl border ${darkMode ? "bg-slate-900 border-slate-700" : "bg-white border-sky-100"}`}>
-            <MusicPlayer darkMode={darkMode} />
-          </div>
+
+          <MusicPlayer selectedDate={selectedDate} darkMode={darkMode} />
+          <DeadlineList selectedDate={selectedDate} darkMode={darkMode} />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
