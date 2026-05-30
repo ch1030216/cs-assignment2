@@ -77,7 +77,6 @@ export default function Home() {
             <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${
               darkMode ? "bg-slate-800/50 border-slate-700" : "bg-sky-50/50 border-sky-100/60"
             }`}>
-              // page.js 파일 내
               <MusicPlayer darkMode={darkMode} 
               selectedDate={selectedDate} // 이 prop를 반드시 추가해주세요!
 />
