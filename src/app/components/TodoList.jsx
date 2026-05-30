@@ -41,7 +41,6 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
           Todo-list
         </h2>
 
-        {/* 할 일 입력창 다크모드 대응 완전 수정 */}
         <form onSubmit={handleAddTodo} className="mb-4">
           <div className="relative flex items-center">
             <span className="absolute left-3 text-sky-400 font-bold text-xs">+</span>
@@ -59,7 +58,6 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
           </div>
         </form>
 
-        {/* 할 일 목록 목록판 */}
         <div className="flex flex-col gap-1.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
           {currentTodos.length === 0 ? (
             <div className="text-center py-10">
@@ -78,12 +76,22 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
                       : "bg-white border-sky-100/80 hover:border-sky-200 shadow-sm"
                 }`}
               >
-                <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  readOnly
-                  className="w-3.5 h-3.5 rounded border-sky-300 text-sky-500 focus:ring-sky-400 cursor-pointer flex-shrink-0"
-                />
+                {/* 다크모드 체크박스 배경 화이트 풀림 현상 완전 방전 처리 */}
+                <div className="relative flex items-center justify-center flex-shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    readOnly
+                    className={`w-4 h-4 rounded border appearance-none transition-colors cursor-pointer checked:bg-sky-500 ${
+                      darkMode 
+                        ? "bg-slate-700 border-slate-600 checked:border-sky-500" 
+                        : "bg-white border-sky-300 checked:border-sky-500"
+                    }`}
+                  />
+                  {todo.completed && (
+                    <span className="absolute text-white text-[10px] pointer-events-none font-bold">✓</span>
+                  )}
+                </div>
                 <span className={`text-xs font-medium truncate ${
                   todo.completed 
                     ? "line-through text-slate-400" 

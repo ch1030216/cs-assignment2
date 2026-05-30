@@ -48,7 +48,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return { text: "D-Day", isOverdue: false };
-    if (diffDays < 0) return { text: `D+${Math.abs(diffDays)}`, isOverdue: true }; // 마감일 지남 상태 반환
+    if (diffDays < 0) return { text: `D+${Math.abs(diffDays)}`, isOverdue: true };
     return { text: `D-${diffDays}`, isOverdue: false };
   };
 
@@ -65,7 +65,6 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
             .map((dl) => {
               const dDayInfo = calculateDDay(dl.date);
               
-              // 3. 마감일이 지났을 때(isOverdue) 하늘색의 보색(주황/오렌지색) 스타일 지정 로직
               let badgeStyle = darkMode ? "bg-sky-950 text-sky-400 border-sky-800" : "bg-sky-100 text-sky-600 border-sky-200";
               if (dDayInfo.isOverdue && !dl.completed) {
                 badgeStyle = darkMode ? "bg-orange-950/70 text-orange-400 border-orange-900" : "bg-orange-50 text-orange-600 border-orange-200 font-extrabold";
@@ -83,14 +82,22 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
-                    <input
-                      type="checkbox"
-                      checked={dl.completed || false}
-                      onChange={(e) => handleToggleComplete(dl.id, e)}
-                      className={`w-3.5 h-3.5 rounded border-sky-300 text-sky-500 focus:ring-sky-400 cursor-pointer flex-shrink-0 ${
-                        darkMode ? "bg-slate-700 border-slate-600" : ""
-                      }`}
-                    />
+                    {/* 마감일 알림창 내부 체크박스 다크모드 하얗게 뜨는 현상 완전 차단 */}
+                    <div className="relative flex items-center justify-center flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={dl.completed || false}
+                        onChange={(e) => handleToggleComplete(dl.id, e)}
+                        className={`w-4 h-4 rounded border appearance-none transition-colors cursor-pointer checked:bg-sky-500 ${
+                          darkMode 
+                            ? "bg-slate-700 border-slate-600 checked:border-sky-500" 
+                            : "bg-white border-sky-300 checked:border-sky-500"
+                        }`}
+                      />
+                      {dl.completed && (
+                        <span className="absolute text-white text-[10px] pointer-events-none font-bold">✓</span>
+                      )}
+                    </div>
                     
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 border ${badgeStyle}`}>
                       {dDayInfo.text}
@@ -124,7 +131,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="마감일 제목을 입력하세요"
-          className={`w-full text-xs p-2 border rounded-xl focus:outline-none shadow-sm font-medium ${
+          className={`w-full text-xs p-2.5 border rounded-xl focus:outline-none shadow-sm font-medium ${
             darkMode 
               ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-sky-500 placeholder-slate-500" 
               : "bg-white border-sky-100 text-sky-800 focus:border-sky-400 placeholder-sky-300"
@@ -143,7 +150,11 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
           />
           <button
             type="submit"
-            className="bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold px-3.5 rounded-xl shadow-md transition-all active:scale-95 flex-shrink-0"
+            className={`text-xs font-bold px-3.5 rounded-xl shadow-md transition-all active:scale-95 flex-shrink-0 ${
+              darkMode
+                ? "bg-sky-600 hover:bg-sky-500 text-white"
+                : "bg-sky-500 hover:bg-sky-600 text-white"
+            }`}
           >
             추가
           </button>
