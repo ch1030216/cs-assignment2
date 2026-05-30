@@ -3,12 +3,13 @@
 import { useState } from "react";
 
 export default function TodoList({ selectedDate, todoData, setTodoData }) {
-  // 해당 날짜의 할 일 목록 배열 배열 가져오기 (없으면 빈 배열)
   const items = todoData[selectedDate] || [];
   const [inputValue, setInputValue] = useState("");
 
-  // 새로운 할 일 리스트에 추가 (Enter 키 입력 시)
   const handleKeyDown = (e) => {
+    // ⭐️ 한글 입력 중 엔터를 칠 때 두 번 입력되는 버그를 완벽히 막아줍니다.
+    if (e.nativeEvent.isComposing) return;
+
     if (e.key === "Enter" && inputValue.trim() !== "") {
       e.preventDefault();
       const newItem = {
@@ -21,11 +22,10 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
         ...todoData,
         [selectedDate]: [...items, newItem],
       });
-      setInputValue(""); // 입력창 초기화
+      setInputValue("");
     }
   };
 
-  // 체크박스 토글 함수
   const toggleComplete = (id) => {
     const updatedItems = items.map((item) =>
       item.id === id ? { ...item, completed: !item.completed } : item
@@ -36,7 +36,6 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
     });
   };
 
-  // 할 일 개별 삭제 함수
   const deleteItem = (id) => {
     const updatedItems = items.filter((item) => item.id !== id);
     setTodoData({
@@ -47,9 +46,8 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
 
   return (
     <div className="w-full flex flex-col gap-4">
-      {/* 새로운 투두 작성 입력창 */}
       <div className="relative flex items-center">
-        <span className="absolute left-4 text-slate-300 text-sm">➕</span>
+        <span className="absolute left-4 text-slate-400 text-sm">＋</span>
         <input
           type="text"
           value={inputValue}
@@ -60,8 +58,7 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
         />
       </div>
 
-      {/* 생성된 체크박스 리스트 본체 영역 */}
-      <div className="w-full bg-white border border-slate-100 rounded-xl min-h-[180px] max-h-[260px] overflow-y-auto p-2 flex flex-col gap-1.5 custom-scrollbar">
+      <div className="w-full bg-white border border-slate-100 rounded-xl min-h-[180px] max-h-[260px] overflow-y-auto p-2 flex flex-col gap-1.5">
         {items.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-xs text-slate-300 py-12">
             오늘 해야 할 일 목록이 비어있습니다.
@@ -72,7 +69,6 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
               key={item.id}
               className="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-lg group transition-colors"
             >
-              {/* 왼쪽: 체크박스 아이콘 및 텍스트 조합 */}
               <div
                 onClick={() => toggleComplete(item.id)}
                 className="flex items-center gap-3 cursor-pointer flex-1"
@@ -97,7 +93,6 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
                 </span>
               </div>
 
-              {/* 오른쪽: 마우스를 올렸을 때만 수줍게 노출되는 개별 삭제(X) 버튼 */}
               <button
                 onClick={() => deleteItem(item.id)}
                 className="text-slate-300 hover:text-red-500 text-xs px-2 opacity-0 group-hover:opacity-100 transition-opacity"

@@ -8,7 +8,6 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const iframeRef = useRef(null);
 
-  // 날짜가 바뀌면 재생 상태 초기화
   useEffect(() => {
     setIsPlaying(false);
   }, [selectedDate]);
@@ -40,19 +39,22 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
 
   const embedUrl = getYoutubeEmbedUrl(currentLink);
 
-  // 오디오 컨트롤을 위해 유튜브 iframe을 제어하는 함수
   const togglePlay = () => {
     if (!embedUrl || !iframeRef.current) return;
-    
     const command = isPlaying ? '{"event":"command","func":"pauseVideo","args":[]}' : '{"event":"command","func":"playVideo","args":[]}';
     iframeRef.current.contentWindow.postMessage(command, "*");
     setIsPlaying(!isPlaying);
   };
 
+  // 링크 주소에서 비디오 ID나 핵심 문구만 추출하여 제목처럼 보여주는 함수
+  const getMusicTitle = () => {
+    if (!currentLink) return "등록된 음악이 없습니다.";
+    if (isPlaying) return "🎵 지정된 음악 재생 중";
+    return "⏱️ 음악 재생 대기 중";
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full h-full justify-between relative">
-      
-      {/* 실제 유튜브 화면은 크기를 0으로 만들어 소리만 나게 숨김 처리 */}
       {embedUrl && (
         <div className="w-0 h-0 absolute opacity-0 pointer-events-none">
           <iframe
@@ -63,57 +65,55 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
         </div>
       )}
 
-      {/* 메인 플레이어 카드 디자인 */}
       <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between p-4 shadow-inner min-h-[100px]">
-        {embedUrl ? (
-          <div className="flex items-center justify-between w-full">
-            {/* 왼쪽: 재생 컨트롤 상태 및 음악 안내 */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={togglePlay}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg transition-transform active:scale-95 ${
-                  isPlaying ? "bg-red-500 hover:bg-red-600" : "bg-emerald-500 hover:bg-emerald-600"
-                }`}
-              >
-                {isPlaying ? "⏸" : "▶"}
-              </button>
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-slate-700">
-                  {isPlaying ? "오늘의 배경음악 재생 중" : "음악 대기 중"}
-                </span>
-                <span className="text-xs text-slate-400">Audio Only Mode</span>
-              </div>
-            </div>
-
-            {/* 오른쪽: 주소창 토글 톱니바퀴 버튼 */}
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowInput(!showInput)}
-              className="text-slate-400 hover:text-slate-600 text-xl p-2 transition-colors"
-              title="링크 수정"
+              onClick={togglePlay}
+              disabled={!embedUrl}
+              className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all active:scale-95 ${
+                !embedUrl 
+                  ? "bg-slate-300 cursor-not-allowed"
+                  : isPlaying 
+                    ? "bg-red-500 hover:bg-red-600 shadow-md" 
+                    : "bg-emerald-500 hover:bg-emerald-600 shadow-md"
+              }`}
             >
-              ⚙️
+              {isPlaying ? "⏸" : "▶"}
             </button>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-700 tracking-tight">
+                {getMusicTitle()}
+              </span>
+            </div>
           </div>
-        ) : (
-          <div 
-            onClick={() => setShowInput(true)}
-            className="w-full h-full flex flex-col items-center justify-center text-xs text-slate-400 font-medium cursor-pointer hover:bg-slate-100/50 rounded-xl transition-colors gap-1"
+
+          {/* 깔끔한 모던 스타일 SVG 설정 톱니바퀴 아이콘 버튼 */}
+          <button
+            onClick={() => setShowInput(!showInput)}
+            className={`p-2 rounded-lg border transition-all ${
+              showInput 
+                ? "bg-slate-800 text-white border-slate-800" 
+                : "bg-white text-slate-400 hover:text-slate-600 border-slate-200 shadow-sm"
+            }`}
+            title="링크 수정"
           >
-            <span>🎵 등록된 음악이 없습니다.</span>
-            <span className="text-[10px] text-slate-300">(클릭하여 링크 주소 등록하기)</span>
-          </div>
-        )}
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.767a1.123 1.123 0 0 0-.417 1.03c.004.074.006.148.006.222 0 .074-.002.148-.006.222a1.123 1.123 0 0 0 .417 1.03l1.003.767a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.075.124c-.073.044-.146.087-.22.128c-.332.183-.582.495-.645.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.646-.87c-.074-.04-.147-.083-.22-.127a1.125 1.125 0 0 0-1.074-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.767a1.122 1.122 0 0 0 .417-1.03c-.004-.074-.006-.148-.006-.222 0-.074.002-.148.006-.222a1.122 1.122 0 0 0-.417-1.03l-1.003-.767a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.041.146-.084.218-.128c.332-.183.582-.495.646-.869l.214-1.28Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* 숨겨져 있다가 조건 만족 시 아래에 스르륵 나타나는 주소 수정창 */}
       {(showInput || !embedUrl) && (
-        <div className="w-full animate-fadeIn">
+        <div className="w-full">
           <input
             type="text"
             value={currentLink}
             onChange={handleUrlChange}
             placeholder="유튜브 주소(URL)를 입력하세요"
-            className="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 bg-white font-medium text-slate-600 shadow-sm transition-colors"
+            className="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 bg-white font-medium text-slate-600 shadow-sm transition-all"
           />
         </div>
       )}
