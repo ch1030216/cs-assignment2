@@ -56,15 +56,15 @@ export default function Home() {
         
         {/* 수정된 부분: 하얀 박스가 되던 bg-white를 제거하고 darkMode에 따라 배경색 변경 */}
         <div className={`p-5 rounded-2xl shadow-sm transition-colors ${
-          darkMode ? "bg-slate-800/50 border border-slate-700" : "bg-white border border-sky-100"
+          darkMode ? "bg-slate-900/90 border border-slate-800" : "bg-white border border-sky-100"
         }`}>
-          <CalendarBox 
-            selectedDate={selectedDate} 
-            setSelectedDate={setSelectedDate} 
-            deadlineData={deadlines}
-            darkMode={darkMode}
-          />
-        </div>
+        <CalendarBox 
+          selectedDate={selectedDate} 
+          setSelectedDate={setSelectedDate} 
+          deadlineData={deadlines}
+          darkMode={darkMode}
+        />
+      </div>
 
         {/* 오른쪽 절반: 투두, 음악, 일기장, 데드라인 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -115,4 +115,4 @@ export default function Home() {
       </div>
     </div>
   );
-}
+}i
