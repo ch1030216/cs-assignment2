@@ -65,12 +65,12 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
             <div
               key={`day-${day}`}
               onClick={() => handleDateClick(day)}
-              // 테두리 부분만 수정: 다크 모드일 때 border-slate-900으로 배경과 거의 동일하게 설정
-              className={`border rounded-xl p-1 flex flex-col justify-between items-start cursor-pointer transition-all min-h-[62px] relative ${
+              // 핵심 수정: darkMode일 때는 border 클래스를 제거하거나 아예 투명하게 설정
+              className={`${darkMode ? "border-0" : "border"} rounded-xl p-1 flex flex-col justify-between items-start cursor-pointer transition-all min-h-[62px] relative ${
                 isSelected
                   ? "bg-sky-500 text-white border-sky-500 shadow-md scale-[1.01] z-10"
                   : darkMode
-                    ? "bg-slate-900 text-slate-400 border-slate-900 hover:border-slate-800 hover:bg-slate-800/50"
+                    ? "bg-slate-900 text-slate-400 hover:bg-slate-800"
                     : "bg-white text-slate-800 border-slate-100 hover:bg-sky-50/50"
               }`}
             >
@@ -88,7 +88,7 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
                         : dl.completed
                           ? "opacity-40 line-through"
                           : darkMode 
-                            ? "bg-sky-950/50 text-sky-400 border border-sky-900/20" 
+                            ? "bg-slate-950 text-sky-400" 
                             : "bg-sky-100 text-sky-600 border border-sky-200/50"
                     }`}
                   >
