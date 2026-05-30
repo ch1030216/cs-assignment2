@@ -81,9 +81,9 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
               </span>
 
               <div className="w-full flex flex-col gap-0.5 overflow-hidden mt-0.5 pointer-events-none">
-                {dayDeadlines.slice(0, 1).map((dl) => (
-                  <div
-                    key={dl.id}
+              {dayDeadlines.map((dl) => ( // slice를 지우고 바로 map을 사용합니다
+                <div
+                  key={dl.id}
                     className={`text-[8px] px-1 py-0.5 rounded font-bold truncate text-center block w-full ${
                       isSelected
                         ? "bg-white/20 text-white"
