@@ -3,12 +3,12 @@
 import { useState } from "react";
 import CalendarBox from "./components/CalendarBox";
 import TodoList from "./components/TodoList";
-import Diary from "./components/Diary";
 import MusicPlayer from "./components/MusicPlayer";
 import DeadlineList from "./components/DeadlineList";
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState("2026-05-30");
+  const [diaryText, setDiaryText] = useState(""); // 일기장 텍스트 상태
   const [deadlines, setDeadlines] = useState([
     { id: 1, text: "컴퓨터개론 과제 제출", date: "2026-05-31", completed: false },
     { id: 2, text: "C언어 포인터 복습", date: "2026-06-05", completed: false }
@@ -37,11 +37,22 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 오른쪽: 일기장 & 데드라인 리스트 */}
+        {/* 오른쪽: 일기장(컴포넌트 분리 없이 직접 구현) & 데드라인 리스트 */}
         <div className="flex flex-col gap-6">
-          <div className="flex-1 bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm flex flex-col justify-between">
-            <Diary selectedDate={selectedDate} />
+          {/* 일기장 영역 */}
+          <div className="flex-1 bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm flex flex-col gap-3">
+            <h2 className="text-sm font-bold text-sky-800 flex items-center gap-1.5">
+              <span>✍️</span> Diary
+            </h2>
+            <textarea
+              value={diaryText}
+              onChange={(e) => setDiaryText(e.target.value)}
+              placeholder={`${selectedDate}의 일기를 자유롭게 기록해 보세요...`}
+              className="w-full flex-1 min-h-[150px] p-3 text-xs border border-sky-100 rounded-xl focus:outline-none focus:border-sky-400 bg-white font-medium text-sky-900 placeholder-sky-300 shadow-sm resize-none"
+            />
           </div>
+
+          {/* 데드라인 알림창 영역 */}
           <div className="bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm">
             <h2 className="text-sm font-bold text-sky-800 mb-3 flex items-center gap-1.5">
               <span>📅</span> 마감일 알림창
