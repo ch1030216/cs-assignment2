@@ -10,13 +10,11 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
   const [isLoading, setIsLoading] = useState(false);
   const iframeRef = useRef(null);
 
-  // 날짜가 바뀌면 상태 초기화 및 해당 날짜의 음악 제목 가져오기
   useEffect(() => {
     setIsPlaying(false);
     fetchYoutubeTitle(currentLink);
   }, [selectedDate, currentLink]);
 
-  // 유튜브 oEmbed API를 사용해 실제 동영상 제목을 가져오는 함수
   const fetchYoutubeTitle = async (url) => {
     if (!url) {
       setVideoTitle("등록된 음악이 없습니다.");
@@ -25,16 +23,15 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
     
     setIsLoading(true);
     try {
-      // 유튜브 공식 oEmbed 엔드포인트를 통해 JSON 데이터 요청
       const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
       if (res.ok) {
         const data = await res.json();
-        setVideoTitle(data.title); // 실제 유튜브 동영상 제목 세팅
+        setVideoTitle(data.title);
       } else {
         setVideoTitle("재생 대기 중인 음악");
       }
     } catch (error) {
-      console.error("유튜브 제목 가져오기 실패:", error);
+      console.error(error);
       setVideoTitle("재생 대기 중인 음악");
     } finally {
       setIsLoading(false);
@@ -77,7 +74,6 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
 
   return (
     <div className="flex flex-col gap-3 w-full h-full justify-between relative">
-      {/* 글로벌 스타일 태그를 이용해 CSS 전광판 애니메이션(Marquee) 주입 */}
       <style>{`
         @keyframes marquee {
           0% { transform: translate3d(0, 0, 0); }
@@ -91,11 +87,7 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
         .marquee-content {
           display: inline-block;
           padding-right: 2rem;
-          animation: marquee 15s linear infinite;
-        }
-        /* 음악이 정지 상태일 때는 전광판이 멈추도록 설정 */
-        .marquee-paused {
-          animation-play-state: paused;
+          animation: marquee 12s linear infinite; /* 정지 상태 없이 상시 가동 */
         }
       `}</style>
 
@@ -112,7 +104,6 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
       <div className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between p-4 shadow-inner min-h-[100px]">
         <div className="flex items-center justify-between w-full gap-4 overflow-hidden">
           
-          {/* 왼쪽: 재생 버튼과 텍스트 영역 */}
           <div className="flex items-center gap-4 flex-1 overflow-hidden">
             <button
               onClick={togglePlay}
@@ -128,27 +119,19 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
               {isLoading ? "⏳" : isPlaying ? "⏸" : "▶"}
             </button>
             
-            {/* ⭐️ 전광판 흐르기 효과(Marquee)가 구현된 타이틀 영역 */}
             <div className="flex flex-col flex-1 overflow-hidden">
-              {currentLink && videoTitle.length > 14 ? (
-                <div className="marquee-container w-[160px] sm:w-[200px]">
-                  <div className={`marquee-content text-sm font-bold text-slate-700 tracking-tight ${!isPlaying ? "marquee-paused" : ""}`}>
-                    {videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  </div>
-                  {/* 무한 반복 연결을 위해 동일한 텍스트 복제 배치 */}
-                  <div className={`marquee-content text-sm font-bold text-slate-700 tracking-tight ${!isPlaying ? "marquee-paused" : ""}`} aria-hidden="true">
-                    {videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                  </div>
+              {/* 글자 수가 짧든 길든 언제나 멈추지 않고 흘러가도록 설정 고정 */}
+              <div className="marquee-container w-[160px] sm:w-[200px]">
+                <div className="marquee-content text-sm font-bold text-slate-700 tracking-tight">
+                  {isLoading ? "음악 정보 불러오는 중..." : videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </div>
-              ) : (
-                <span className="text-sm font-bold text-slate-700 tracking-tight truncate">
-                  {isLoading ? "음악 정보 불러오는 중..." : videoTitle}
-                </span>
-              )}
+                <div className="marquee-content text-sm font-bold text-slate-700 tracking-tight" aria-hidden="true">
+                  {isLoading ? "음악 정보 불러오는 중..." : videoTitle} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* 오른쪽: 모던 스타일 SVG 설정 버튼 */}
           <button
             onClick={() => setShowInput(!showInput)}
             className={`p-2 rounded-lg border flex-shrink-0 transition-all ${
@@ -156,7 +139,6 @@ export default function MusicPlayer({ selectedDate, musicData, setMusicData }) {
                 ? "bg-slate-800 text-white border-slate-800" 
                 : "bg-white text-slate-400 hover:text-slate-600 border-slate-200 shadow-sm"
             }`}
-            title="링크 수정"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.767a1.123 1.123 0 0 0-.417 1.03c.004.074.006.148.006.222 0 .074-.002.148-.006.222a1.123 1.123 0 0 0 .417 1.03l1.003.767a1.125 1.125 0 0 1 .26 1.43l-1.296 2.247a1.125 1.125 0 0 1-1.37.49l-1.216-.456a1.125 1.125 0 0 0-1.075.124c-.073.044-.146.087-.22.128c-.332.183-.582.495-.645.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281a1.125 1.125 0 0 0-.646-.87c-.074-.04-.147-.083-.22-.127a1.125 1.125 0 0 0-1.074-.124l-1.217.456a1.125 1.125 0 0 1-1.37-.49l-1.296-2.247a1.125 1.125 0 0 1 .26-1.43l1.003-.767a1.122 1.122 0 0 0 .417-1.03c-.004-.074-.006-.148-.006-.222 0-.074.002-.148.006-.222a1.122 1.122 0 0 0-.417-1.03l-1.003-.767a1.125 1.125 0 0 1-.26-1.43l1.296-2.247a1.125 1.125 0 0 1 1.37-.49l1.216.456c.356.133.751.072 1.076-.124.072-.041.146-.084.218-.128c.332-.183.582-.495.646-.869l.214-1.28Z" />

@@ -1,83 +1,110 @@
 "use client";
 
-export default function CalendarBox({ selectedDate, setSelectedDate }) {
-  const [yearStr, monthStr, dayStr] = selectedDate.split("-");
-  const currentYear = parseInt(yearStr);
-  const currentMonth = parseInt(monthStr); // 1 ~ 12
+import { useState } from "react";
 
-  // 이전 달, 다음 달 이동 버튼 함수
-  const changeMonth = (direction) => {
-    let nextYear = currentYear;
-    let nextMonth = currentMonth + direction;
+export default function CalendarBox({ selectedDate, setSelectedDate, deadlineData = [] }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-    if (nextMonth > 12) { nextMonth = 1; nextYear += 1; }
-    if (nextMonth < 1) { nextMonth = 12; nextYear -= 1; }
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
 
-    const padMonth = String(nextMonth).padStart(2, "0");
-    setSelectedDate(`${nextYear}-${padMonth}-01`);
-  };
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
-  // 달력 그리드를 그리기 위한 날짜 계산 logic
-  const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay(); // 시작 요일 (0: 일요일)
-  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate(); // 해당 달의 총 일수
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const daysArray = [];
-  // 시작 요일 전까지 빈 칸 채우기
-  for (let i = 0; i < firstDayOfMonth; i++) { daysArray.push(null); }
-  // 1일부터 마지막 날까지 채우기
-  for (let i = 1; i <= daysInMonth; i++) { daysArray.push(i); }
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    daysArray.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    daysArray.push(i);
+  }
 
-  const dayLabels = ["일", "월", "화", "수", "목", "금", "토"];
+  const handleDateClick = (day) => {
+    if (!day) return;
+    const formattedMonth = String(month + 1).padStart(2, "0");
+    const formattedDay = String(day).padStart(2, "0");
+    setSelectedDate(`${year}-${formattedMonth}-${formattedDay}`);
+  };
 
   return (
-    <div className="flex flex-col h-full justify-between">
-      <div>
-        {/* 상단 컨트롤러 조작 바 */}
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Calendar</h2>
-          <div className="flex items-center gap-4 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-            <button onClick={() => changeMonth(-1)} className="font-bold hover:text-slate-500 text-slate-700 px-1">◀</button>
-            <span className="font-extrabold text-sm text-slate-800">{currentYear}년 {currentMonth}월</span>
-            <button onClick={() => changeMonth(1)} className="font-bold hover:text-slate-500 text-slate-700 px-1">▶</button>
-          </div>
-        </div>
-
-        {/* 요일 라벨 표시 행 */}
-        <div className="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 uppercase tracking-wider mb-3">
-          {dayLabels.map((day, idx) => (
-            <div key={idx} className={idx === 0 ? "text-red-400" : idx === 6 ? "text-blue-400" : ""}>{day}</div>
-          ))}
-        </div>
-
-        {/* 30일 바둑판 달력 그리드 본체 */}
-        <div className="grid grid-cols-7 gap-2">
-          {daysArray.map((day, index) => {
-            if (day === null) return <div key={`empty-${index}`} />;
-
-            const dateString = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-            const isSelected = selectedDate === dateString;
-
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDate(dateString)}
-                className={`h-11 rounded-xl text-sm font-semibold flex items-center justify-center transition-all ${
-                  isSelected 
-                    ? "bg-slate-800 text-white shadow-md transform scale-105" 
-                    : "hover:bg-slate-100 text-slate-700"
-                }`}
-              >
-                {day}
-              </button>
-            );
-          })}
+    <div className="w-full h-full flex flex-col justify-between p-2">
+      {/* 달력 헤더 */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-slate-800">Calendar</h2>
+        <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+          <button onClick={prevMonth} className="p-1.5 hover:bg-white rounded-lg text-slate-600 transition-colors text-xs font-bold">◀</button>
+          <span className="text-xs font-bold text-slate-700 px-2">{year}년 {month + 1}월</span>
+          <button onClick={nextMonth} className="p-1.5 hover:bg-white rounded-lg text-slate-600 transition-colors text-xs font-bold">▶</button>
         </div>
       </div>
-      
-      {/* 최하단에 현재 선택된 날짜 바 한 번 더 노출 */}
-      <div className="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
-        <span className="text-xs text-slate-400 font-medium">Selected:</span>
-        <span className="text-sm font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">{selectedDate}</span>
+
+      {/* 요일 라벨 표시 */}
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-2">
+        <div className="text-red-400">일</div>
+        <div>월</div>
+        <div>화</div>
+        <div>수</div>
+        <div>목</div>
+        <div>금</div>
+        <div className="text-blue-400">토</div>
+      </div>
+
+      {/* 날짜 그리드판 - 세로 비율을 대폭 확장하고 각 셀에 충분한 고정 높이를 부여 */}
+      <div className="grid grid-cols-7 gap-1 flex-1 min-h-[420px]">
+        {daysArray.map((day, index) => {
+          if (!day) return <div key={`empty-${index}`} className="bg-transparent" />;
+
+          const formattedMonth = String(month + 1).padStart(2, "0");
+          const formattedDay = String(day).padStart(2, "0");
+          const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
+          const isSelected = selectedDate === dateStr;
+
+          // ⭐️ 메인의 deadlines 배열에서 현재 날짜(dateStr)와 일치하는 마감일 필터링
+          // 데이터 구조 형태에 맞게 dl.date 혹은 dl.dueDate 필드를 대조합니다.
+          const dayDeadlines = Array.isArray(deadlineData) 
+            ? deadlineData.filter(dl => dl.date === dateStr || dl.dueDate === dateStr)
+            : [];
+
+          return (
+            <div
+              key={`day-${day}`}
+              onClick={() => handleDateClick(day)}
+              className={`border border-slate-100 rounded-xl p-1 flex flex-col justify-between cursor-pointer transition-all min-h-[70px] ${
+                isSelected
+                  ? "bg-slate-800 text-white border-slate-800 shadow-md scale-[1.02]"
+                  : "bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {/* 날짜 숫자 */}
+              <span className="text-xs font-bold px-1.5 py-0.5">{day}</span>
+
+              {/* ⭐️ 데드라인 미니 배지 노출 영역 */}
+              <div className="w-full flex flex-col gap-0.5 overflow-hidden mt-1">
+                {dayDeadlines.slice(0, 2).map((dl, idx) => (
+                  <div
+                    key={dl.id || idx}
+                    className={`text-[9px] px-1 py-0.5 rounded font-semibold truncate max-w-full text-center ${
+                      isSelected 
+                        ? "bg-white/20 text-white" 
+                        : "bg-red-50 text-red-500 border border-red-100"
+                    }`}
+                    title={dl.text || dl.title}
+                  >
+                    🚨 {dl.text || dl.title}
+                  </div>
+                ))}
+                {dayDeadlines.length > 2 && (
+                  <div className="text-[8px] text-center text-slate-400 font-medium">
+                    +{dayDeadlines.length - 2}개 더 있음
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
