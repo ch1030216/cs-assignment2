@@ -52,7 +52,7 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
         <div className="text-blue-400">토</div>
       </div>
 
-      {/* 날짜 그리드판 - 세로 비율을 대폭 확장하고 각 셀에 충분한 고정 높이를 부여 */}
+      {/* 날짜 그리드판 */}
       <div className="grid grid-cols-7 gap-1 flex-1 min-h-[420px]">
         {daysArray.map((day, index) => {
           if (!day) return <div key={`empty-${index}`} className="bg-transparent" />;
@@ -62,10 +62,14 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
           const dateStr = `${year}-${formattedMonth}-${formattedDay}`;
           const isSelected = selectedDate === dateStr;
 
-          // ⭐️ 메인의 deadlines 배열에서 현재 날짜(dateStr)와 일치하는 마감일 필터링
-          // 데이터 구조 형태에 맞게 dl.date 혹은 dl.dueDate 필드를 대조합니다.
-          const dayDeadlines = Array.isArray(deadlineData) 
-            ? deadlineData.filter(dl => dl.date === dateStr || dl.dueDate === dateStr)
+          // ⭐️ 데이터 포맷팅 안전 장치 추가: dl.date 값을 비교하여 달력 날짜와 매핑합니다.
+          const dayDeadlines = Array.isArray(deadlineData)
+            ? deadlineData.filter((dl) => {
+                if (!dl.date) return false;
+                // '2026-5-30'와 '2026-05-30' 같은 포맷 불일치 방지를 위해 가볍게 정규화 처리
+                const dlDateFormatted = new Date(dl.date).toISOString().split("T")[0];
+                return dlDateFormatted === dateStr;
+              })
             : [];
 
           return (
@@ -81,23 +85,23 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
               {/* 날짜 숫자 */}
               <span className="text-xs font-bold px-1.5 py-0.5">{day}</span>
 
-              {/* ⭐️ 데드라인 미니 배지 노출 영역 */}
+              {/* ⭐️ 데드라인 미니 배지 영역 */}
               <div className="w-full flex flex-col gap-0.5 overflow-hidden mt-1">
-                {dayDeadlines.slice(0, 2).map((dl, idx) => (
+                {dayDeadlines.slice(0, 2).map((dl) => (
                   <div
-                    key={dl.id || idx}
-                    className={`text-[9px] px-1 py-0.5 rounded font-semibold truncate max-w-full text-center ${
-                      isSelected 
-                        ? "bg-white/20 text-white" 
+                    key={dl.id}
+                    className={`text-[9px] px-1 py-0.5 rounded font-bold truncate max-w-full text-center ${
+                      isSelected
+                        ? "bg-white/20 text-white"
                         : "bg-red-50 text-red-500 border border-red-100"
                     }`}
-                    title={dl.text || dl.title}
+                    title={dl.text}
                   >
-                    🚨 {dl.text || dl.title}
+                    📌 {dl.text}
                   </div>
                 ))}
                 {dayDeadlines.length > 2 && (
-                  <div className="text-[8px] text-center text-slate-400 font-medium">
+                  <div className={`text-[8px] text-center font-medium ${isSelected ? "text-slate-300" : "text-slate-400"}`}>
                     +{dayDeadlines.length - 2}개 더 있음
                   </div>
                 )}
