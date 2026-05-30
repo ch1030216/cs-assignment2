@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function CalendarBox({ selectedDate, setSelectedDate, deadlineData = [] }) {
+export default function CalendarBox({ selectedDate, setSelectedDate, deadlineData = [], darkMode }) {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const year = currentDate.getFullYear();
@@ -28,17 +28,18 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
   return (
     <div className="w-full h-full flex flex-col justify-between p-1 select-none font-sans">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-base font-bold text-sky-800 flex items-center gap-1">
-          <span>📅</span> Calendar
+        {/* 이모티콘 제거 */}
+        <h2 className={`text-base font-bold ${darkMode ? "text-sky-400" : "text-sky-800"}`}>
+          Calendar
         </h2>
-        <div className="flex items-center gap-1.5 bg-sky-100/70 rounded-xl p-1">
-          <button type="button" onClick={prevMonth} className="p-1 hover:bg-white rounded-lg text-sky-700 transition-colors text-[10px] font-bold">◀</button>
-          <span className="text-[11px] font-bold text-sky-800 px-1">{year}년 {month + 1}월</span>
-          <button type="button" onClick={nextMonth} className="p-1 hover:bg-white rounded-lg text-sky-700 transition-colors text-[10px] font-bold">▶</button>
+        <div className={`flex items-center gap-1.5 rounded-xl p-1 ${darkMode ? "bg-slate-800" : "bg-sky-100/70"}`}>
+          <button type="button" onClick={prevMonth} className={`p-1 rounded-lg text-[10px] font-bold transition-colors ${darkMode ? "text-sky-400 hover:bg-slate-700" : "text-sky-700 hover:bg-white"}`}>◀</button>
+          <span className={`text-[11px] font-bold px-1 ${darkMode ? "text-slate-200" : "text-sky-800"}`}>{year}년 {month + 1}월</span>
+          <button type="button" onClick={nextMonth} className={`p-1 rounded-lg text-[10px] font-bold transition-colors ${darkMode ? "text-sky-400 hover:bg-slate-700" : "text-sky-700 hover:bg-white"}`}>▶</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-sky-400 mb-1.5">
+      <div className={`grid grid-cols-7 gap-1 text-center text-[11px] font-bold mb-1.5 ${darkMode ? "text-slate-400" : "text-sky-400"}`}>
         <div className="text-red-400">일</div>
         <div>월</div>
         <div>화</div>
@@ -71,11 +72,13 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
               onClick={() => handleDateClick(day)}
               className={`border rounded-xl p-1 flex flex-col justify-between items-start cursor-pointer transition-all min-h-[62px] relative ${
                 isSelected
-                  ? "bg-sky-500 text-white border-sky-500 shadow-md scale-[1.02] z-10"
-                  : "bg-white text-sky-900 border-sky-100/50 hover:bg-sky-50/70"
+                  ? "bg-sky-500 text-white border-sky-500 shadow-md scale-[1.01] z-10"
+                  : darkMode
+                    ? "bg-slate-800/60 text-slate-200 border-slate-700/50 hover:bg-slate-700"
+                    : "bg-white text-sky-900 border-sky-100/50 hover:bg-sky-50/70"
               }`}
             >
-              <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${isSelected ? "text-white" : "text-sky-900"}`}>
+              <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${isSelected ? "text-white" : darkMode ? "text-slate-300" : "text-sky-900"}`}>
                 {day}
               </span>
 
@@ -87,8 +90,10 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
                       isSelected
                         ? "bg-white/20 text-white"
                         : dl.completed
-                          ? "bg-sky-100/50 text-sky-400/60 line-through"
-                          : "bg-sky-100 text-sky-600 border border-sky-200/50"
+                          ? "opacity-40 line-through"
+                          : darkMode 
+                            ? "bg-sky-950 text-sky-400 border border-sky-900" 
+                            : "bg-sky-100 text-sky-600 border border-sky-200/50"
                     }`}
                   >
                     📌 {dl.text}
