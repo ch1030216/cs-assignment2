@@ -6,7 +6,7 @@ export default function Planner() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [diaryText, setDiaryText] = useState('');
 
-  // 1. 로컬 스토리지에서 기존 일기 데이터 불러오기d
+  // 1. 로컬 스토리지에서 기존 일기 데이터 불러오기
   useEffect(() => {
     const savedData = localStorage.getItem('my_planner_data');
     if (savedData) setDiaries(JSON.parse(savedData));
