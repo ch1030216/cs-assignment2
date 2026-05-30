@@ -8,7 +8,14 @@ import DeadlineList from "./components/DeadlineList";
 
 export default function Home() {
   const [selectedDate, setSelectedDate] = useState("2026-05-30");
-  const [diaryText, setDiaryText] = useState(""); // 일기장 텍스트 상태
+  const [diaryText, setDiaryText] = useState("");
+  
+  // ⭐️ 빌드 에러를 방지하기 위해 기본 날짜 키값들을 안전하게 초기화해 둡니다.
+  const [todos, setTodos] = useState({
+    "2026-05-30": [],
+    "2026-05-31": []
+  });
+
   const [deadlines, setDeadlines] = useState([
     { id: 1, text: "컴퓨터개론 과제 제출", date: "2026-05-31", completed: false },
     { id: 2, text: "C언어 포인터 복습", date: "2026-06-05", completed: false }
@@ -30,14 +37,15 @@ export default function Home() {
         {/* 가운데: 투두리스트 & 음악 영역 */}
         <div className="flex flex-col gap-6">
           <div className="flex-1 bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm flex flex-col justify-between">
-            <TodoList selectedDate={selectedDate} />
+            {/* ⭐️ 안정적인 데이터 연동을 위해 todos와 setTodos를 함께 전달합니다. */}
+            <TodoList selectedDate={selectedDate} todos={todos} setTodos={setTodos} />
           </div>
           <div className="bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm">
             <MusicPlayer />
           </div>
         </div>
 
-        {/* 오른쪽: 일기장(컴포넌트 분리 없이 직접 구현) & 데드라인 리스트 */}
+        {/* 오른쪽: 일기장 & 데드라인 리스트 */}
         <div className="flex flex-col gap-6">
           {/* 일기장 영역 */}
           <div className="flex-1 bg-sky-50/50 p-5 rounded-2xl border border-sky-100/60 shadow-sm flex flex-col gap-3">
