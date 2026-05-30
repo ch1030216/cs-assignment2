@@ -5,38 +5,30 @@ import { useState, useRef } from "react";
 export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
   const currentTodos = todos && todos[selectedDate] || [];
   const inputRefs = useRef({});
+  const [isComposing, setIsComposing] = useState(false); // 한글 조합 상태 확인
 
   const updateTodos = (newTodos) => {
     setTodos({ ...todos, [selectedDate]: newTodos });
   };
 
   const handleKeyDown = (e, index, todo) => {
-    // 키 입력이 중복 실행되는 것을 방지
+    // 글자 조합 중(한글 입력 중)이면 엔터 이벤트 무시
+    if (isComposing) return;
+
     if (e.key === "Enter") {
       e.preventDefault();
-      
-      // 고유 ID 생성을 위해 현재 시간 + 랜덤값 사용
       const newTodo = { id: Date.now() + Math.random(), text: "", completed: false };
-      
       const updated = [...currentTodos];
       updated.splice(index + 1, 0, newTodo);
       updateTodos(updated);
 
-      setTimeout(() => {
-        inputRefs.current[newTodo.id]?.focus();
-      }, 50); // 지연 시간을 조금 더 주어 렌더링 충돌 방지
-    } 
-    else if (e.key === "Backspace" && todo.text === "" && currentTodos.length > 1) {
+      setTimeout(() => inputRefs.current[newTodo.id]?.focus(), 50);
+    } else if (e.key === "Backspace" && todo.text === "" && currentTodos.length > 1) {
       e.preventDefault();
       const prevTodo = currentTodos[index - 1];
-      const updated = currentTodos.filter((t) => t.id !== todo.id);
-      updateTodos(updated);
+      updateTodos(currentTodos.filter((t) => t.id !== todo.id));
       
-      if (prevTodo) {
-        setTimeout(() => {
-          inputRefs.current[prevTodo.id]?.focus();
-        }, 50);
-      }
+      if (prevTodo) setTimeout(() => inputRefs.current[prevTodo.id]?.focus(), 50);
     }
   };
 
@@ -57,6 +49,9 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
             <input
               ref={(el) => (inputRefs.current[todo.id] = el)}
               value={todo.text}
+              // 한글 입력 중인지 체크
+              onCompositionStart={() => setIsComposing(true)}
+              onCompositionEnd={() => setIsComposing(false)}
               onChange={(e) => {
                 const updated = currentTodos.map(t => t.id === todo.id ? {...t, text: e.target.value} : t);
                 updateTodos(updated);
@@ -73,7 +68,7 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
             onClick={() => updateTodos([{id: Date.now(), text: "", completed: false}])}
             className={`text-xs ${darkMode ? "text-slate-500" : "text-sky-300"}`}
           >
-            새로운 할 일을 기록해보세요
+            + 새로운 할 일을 기록하세요
           </button>
         )}
       </div>
