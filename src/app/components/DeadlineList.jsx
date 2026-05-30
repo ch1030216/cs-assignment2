@@ -62,7 +62,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
         ) : (
           [...deadlines]
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            // --- 필터링 로직: 완료되지 않았고, 마감일이 오늘(D-Day) 포함 미래인 경우만 표시 ---
+            // --- 필터링 로직: 완료 여부 무관, 마감일이 오늘 포함 미래인 경우만 표시 ---
             .filter((dl) => {
               const baseDate = new Date(selectedDate);
               baseDate.setHours(0, 0, 0, 0);
@@ -70,7 +70,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
               target.setHours(0, 0, 0, 0);
               const diffDays = Math.ceil((target - baseDate) / (1000 * 60 * 60 * 24));
               
-              return !dl.completed && diffDays >= 0;
+              return diffDays >= 0;
             })
             // --------------------------------------------------------------------------
             .map((dl) => {
@@ -82,9 +82,11 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                 <div
                   key={dl.id}
                   className={`flex items-center justify-between border rounded-xl p-2 shadow-sm group transition-all ${
-                    darkMode 
-                      ? "bg-slate-800 border-slate-700/60 hover:border-slate-600" 
-                      : "bg-white border-sky-100/80 hover:border-sky-300"
+                    dl.completed
+                      ? "opacity-40"
+                      : darkMode 
+                        ? "bg-slate-800 border-slate-700/60 hover:border-slate-600" 
+                        : "bg-white border-sky-100/80 hover:border-sky-300"
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
@@ -99,6 +101,9 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                             : "bg-white border-sky-300 checked:border-sky-500"
                         }`}
                       />
+                      {dl.completed && (
+                        <span className="absolute text-white text-[10px] pointer-events-none font-bold">✓</span>
+                      )}
                     </div>
                     
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 border ${badgeStyle}`}>
@@ -106,7 +111,9 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                     </span>
                     
                     <p className={`text-xs font-medium truncate flex-1 ${
-                      darkMode ? "text-slate-200" : "text-sky-900"
+                      dl.completed 
+                        ? "line-through text-slate-500" 
+                        : darkMode ? "text-slate-200" : "text-sky-900"
                     }`} title={dl.text}>
                       {dl.text}
                     </p>
