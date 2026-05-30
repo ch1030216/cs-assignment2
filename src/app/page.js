@@ -54,8 +54,10 @@ export default function Home() {
         darkMode ? "bg-slate-900/90 border-slate-800 shadow-black/60" : "bg-white/80 backdrop-blur-md border-sky-100"
       }`}>
         
-        {/* 수정된 부분: 하얀 테두리를 만드는 border와 border-sky-100을 제거했습니다 */}
-        <div className={`p-5 rounded-2xl shadow-sm bg-white`}>
+        {/* 수정된 부분: 하얀 박스가 되던 bg-white를 제거하고 darkMode에 따라 배경색 변경 */}
+        <div className={`p-5 rounded-2xl shadow-sm transition-colors ${
+          darkMode ? "bg-slate-800/50 border border-slate-700" : "bg-white border border-sky-100"
+        }`}>
           <CalendarBox 
             selectedDate={selectedDate} 
             setSelectedDate={setSelectedDate} 
@@ -64,8 +66,9 @@ export default function Home() {
           />
         </div>
 
-        {/* 오른쪽 절반 */}
+        {/* 오른쪽 절반: 투두, 음악, 일기장, 데드라인 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          
           <div className="flex flex-col gap-6">
             <div className={`flex-1 p-5 rounded-2xl border shadow-sm flex flex-col justify-between transition-colors ${
               darkMode ? "bg-slate-800/50 border-slate-700" : "bg-sky-50/50 border-sky-100/60"
