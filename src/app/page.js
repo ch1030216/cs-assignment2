@@ -54,10 +54,8 @@ export default function Home() {
         darkMode ? "bg-slate-900/90 border-slate-800 shadow-black/60" : "bg-white/80 backdrop-blur-md border-sky-100"
       }`}>
         
-        {/* 왼쪽 절반: 달력 영역 (배경을 다크모드에서도 깔끔하게 유지되도록 스타일 고정) */}
-        <div className={`p-5 rounded-2xl border shadow-sm transition-colors ${
-          darkMode ? "bg-slate-800/50 border-slate-700" : "bg-sky-50/50 border-sky-100/60"
-        }`}>
+        {/* 왼쪽 절반: 달력 영역 (요청에 따라 다크모드에서도 항상 첫 번째 사진처럼 밝은 흰색 배경 유지) */}
+        <div className="p-5 rounded-2xl border shadow-sm bg-white border-sky-100">
           <CalendarBox 
             selectedDate={selectedDate} 
             setSelectedDate={setSelectedDate} 
