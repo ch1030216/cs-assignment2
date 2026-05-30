@@ -12,6 +12,18 @@
 <body class="bg-gray-50 text-gray-800">
   <div id="root"></div>
 
-  <script type="text/babel" src="App.jsx"></script>
+  <script type="text/babel" data-presets="react" data-src="App.jsx"></script>
+  
+  <script>
+    // Vercel/브라우저 환경에서 App.jsx를 강제로 읽어와 주입하는 보안 우회 스크립트
+    fetch('App.jsx')
+      .then(response => response.text())
+      .then(code => {
+        const script = document.createElement('script');
+        script.type = 'text/babel';
+        script.text = code;
+        document.body.appendChild(script);
+      });
+  </script>
 </body>
 </html>
