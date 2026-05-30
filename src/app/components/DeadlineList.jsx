@@ -62,13 +62,17 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
         ) : (
           [...deadlines]
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            // --- 필터링 로직 적용 시작 ---
+            // --- 필터링 로직: 완료되지 않았고, 마감일이 오늘(D-Day) 포함 미래인 경우만 표시 ---
             .filter((dl) => {
-              const dDayInfo = calculateDDay(dl.date);
-              // 완료되었거나, 이미 지난 마감일(isOverdue)인 경우 제외
-              return !dl.completed && !dDayInfo.isOverdue;
+              const baseDate = new Date(selectedDate);
+              baseDate.setHours(0, 0, 0, 0);
+              const target = new Date(dl.date);
+              target.setHours(0, 0, 0, 0);
+              const diffDays = Math.ceil((target - baseDate) / (1000 * 60 * 60 * 24));
+              
+              return !dl.completed && diffDays >= 0;
             })
-            // --- 필터링 로직 적용 끝 ---
+            // --------------------------------------------------------------------------
             .map((dl) => {
               const dDayInfo = calculateDDay(dl.date);
               
