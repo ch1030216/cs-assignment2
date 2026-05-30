@@ -1,30 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
-  const currentTodos = todos && todos[selectedDate] ? todos[selectedDate] : [];
-  const [isComposing, setIsComposing] = useState(false); // 한글 입력 상태 체크
+  const currentTodos = todos && todos[selectedDate] || [];
+  const inputRefs = useRef({}); // 각 input의 ref를 관리할 객체
 
   const updateTodos = (newTodos) => {
     setTodos({ ...todos, [selectedDate]: newTodos });
   };
 
   const handleKeyDown = (e, index, todo) => {
-    // 1. Enter: 다음 줄 생성
     if (e.key === "Enter") {
       e.preventDefault();
       const newTodo = { id: Date.now(), text: "", completed: false };
       const updated = [...currentTodos];
       updated.splice(index + 1, 0, newTodo);
       updateTodos(updated);
-    } 
-    // 2. Backspace: 내용이 없으면 줄 삭제
-    else if (e.key === "Backspace" && todo.text === "") {
+
+      // 새 항목이 렌더링된 후 포커스 이동
+      setTimeout(() => {
+        inputRefs.current[newTodo.id]?.focus();
+      }, 0);
+    } else if (e.key === "Backspace" && todo.text === "" && currentTodos.length > 1) {
       e.preventDefault();
-      if (currentTodos.length > 1) {
-        const updated = currentTodos.filter((t) => t.id !== todo.id);
-        updateTodos(updated);
+      const prevTodo = currentTodos[index - 1];
+      const updated = currentTodos.filter((t) => t.id !== todo.id);
+      updateTodos(updated);
+      
+      // 이전 칸으로 포커스 이동
+      if (prevTodo) {
+        setTimeout(() => {
+          inputRefs.current[prevTodo.id]?.focus();
+        }, 0);
       }
     }
   };
@@ -44,9 +52,8 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
               className={`w-4 h-4 rounded border cursor-pointer flex-shrink-0 ${todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"}`} 
             />
             <input
+              ref={(el) => (inputRefs.current[todo.id] = el)} // ref 할당
               value={todo.text}
-              onCompositionStart={() => setIsComposing(true)}
-              onCompositionEnd={() => setIsComposing(false)}
               onChange={(e) => {
                 const updated = currentTodos.map(t => t.id === todo.id ? {...t, text: e.target.value} : t);
                 updateTodos(updated);
@@ -58,7 +65,6 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
           </div>
         ))}
         
-        {/* 리스트가 비었을 때 첫 줄 생성 버튼 */}
         {currentTodos.length === 0 && (
           <button 
             onClick={() => updateTodos([{id: Date.now(), text: "", completed: false}])}
