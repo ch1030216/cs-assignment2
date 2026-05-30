@@ -1,38 +1,41 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
   const currentTodos = todos && todos[selectedDate] || [];
-  const inputRefs = useRef({}); // 각 input의 ref를 관리할 객체
+  const inputRefs = useRef({});
 
   const updateTodos = (newTodos) => {
     setTodos({ ...todos, [selectedDate]: newTodos });
   };
 
   const handleKeyDown = (e, index, todo) => {
+    // 키 입력이 중복 실행되는 것을 방지
     if (e.key === "Enter") {
       e.preventDefault();
-      const newTodo = { id: Date.now(), text: "", completed: false };
+      
+      // 고유 ID 생성을 위해 현재 시간 + 랜덤값 사용
+      const newTodo = { id: Date.now() + Math.random(), text: "", completed: false };
+      
       const updated = [...currentTodos];
       updated.splice(index + 1, 0, newTodo);
       updateTodos(updated);
 
-      // 새 항목이 렌더링된 후 포커스 이동
       setTimeout(() => {
         inputRefs.current[newTodo.id]?.focus();
-      }, 0);
-    } else if (e.key === "Backspace" && todo.text === "" && currentTodos.length > 1) {
+      }, 50); // 지연 시간을 조금 더 주어 렌더링 충돌 방지
+    } 
+    else if (e.key === "Backspace" && todo.text === "" && currentTodos.length > 1) {
       e.preventDefault();
       const prevTodo = currentTodos[index - 1];
       const updated = currentTodos.filter((t) => t.id !== todo.id);
       updateTodos(updated);
       
-      // 이전 칸으로 포커스 이동
       if (prevTodo) {
         setTimeout(() => {
           inputRefs.current[prevTodo.id]?.focus();
-        }, 0);
+        }, 50);
       }
     }
   };
@@ -52,7 +55,7 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
               className={`w-4 h-4 rounded border cursor-pointer flex-shrink-0 ${todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"}`} 
             />
             <input
-              ref={(el) => (inputRefs.current[todo.id] = el)} // ref 할당
+              ref={(el) => (inputRefs.current[todo.id] = el)}
               value={todo.text}
               onChange={(e) => {
                 const updated = currentTodos.map(t => t.id === todo.id ? {...t, text: e.target.value} : t);
@@ -70,7 +73,7 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
             onClick={() => updateTodos([{id: Date.now(), text: "", completed: false}])}
             className={`text-xs ${darkMode ? "text-slate-500" : "text-sky-300"}`}
           >
-            + 새로운 할 일을 기록하세요
+            새로운 할 일을 기록해보세요
           </button>
         )}
       </div>
