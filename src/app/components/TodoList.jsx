@@ -53,7 +53,7 @@ export default function TodoList({ selectedDate, todoData, setTodoData }) {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="할 일을 적고 Enter를 눌러 추가하세요"
+          placeholder="할 일을 적고 Enter를 눌러 추가"
           className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:border-slate-400 focus:bg-white text-slate-700 shadow-inner transition-all"
         />
       </div>

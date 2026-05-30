@@ -1,14 +1,18 @@
-import "./globals.css"; // Next.js 기본 생성 스타일 파일
+import { Gowun_Dodum } from "next/font/google";
+import "./globals.css";
 
-export const metadata = {
-  title: "나만의 데스크톱 대시보드 플래너",
-  description: "플래너와 다이어리를 한 눈에",
-};
+const gowunDodum = Gowun_Dodum({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-gowun",
+});
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko">
-      <body className="antialiased bg-slate-50 text-slate-900">{children}</body>
+    <html lang="ko" className={gowunDodum.variable}>
+      <body className="font-sans antialiased bg-sky-100/40 text-slate-700">
+        {children}
+      </body>
     </html>
   );
 }
