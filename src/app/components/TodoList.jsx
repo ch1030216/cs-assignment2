@@ -1,70 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
-export default function DiaryTodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
+export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode }) {
+  const [inputValue, setInputValue] = useState("");
+  const inputRefs = useRef({}); // 각 투두 항목의 input 접근을 위한 ref
+
   const currentTodos = todos && todos[selectedDate] ? todos[selectedDate] : [];
 
-  // 투두 수정 (메모장처럼 텍스트 변경)
-  const handleTextChange = (id, newText) => {
+  const handleAddTodo = (e) => {
+    e.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const newTodo = { id: Date.now(), text: inputValue, completed: false };
+    setTodos({ ...todos, [selectedDate]: [...currentTodos, newTodo] });
+    setInputValue("");
+  };
+
+  const handleTodoChange = (id, newText) => {
     const updated = currentTodos.map((t) => (t.id === id ? { ...t, text: newText } : t));
     setTodos({ ...todos, [selectedDate]: updated });
   };
 
-  // 투두 토글
-  const handleToggle = (id) => {
-    const updated = currentTodos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
-    setTodos({ ...todos, [selectedDate]: updated });
-  };
-
-  // 줄바꿈 시 새 투두 추가 (Enter 키)
-  const handleKeyDown = (e) => {
+  // 엔터 입력 시 새 투두 생성 및 커서 이동
+  const handleKeyDown = (e, id) => {
     if (e.key === "Enter") {
       e.preventDefault();
       const newTodo = { id: Date.now(), text: "", completed: false };
-      setTodos({ ...todos, [selectedDate]: [...currentTodos, newTodo] });
+      const index = currentTodos.findIndex((t) => t.id === id);
+      const updated = [...currentTodos];
+      updated.splice(index + 1, 0, newTodo);
+      setTodos({ ...todos, [selectedDate]: updated });
+      
+      // 다음 항목으로 포커스 이동을 위해 짧은 지연 후 실행
+      setTimeout(() => {
+        inputRefs.current[newTodo.id]?.focus();
+      }, 0);
     }
   };
 
   return (
-    <div className={`w-full h-full p-6 rounded-3xl border ${darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-sky-50 shadow-sm"}`}>
-      <h2 className={`text-lg font-bold mb-4 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>Diary</h2>
-      
-      <div className="flex flex-col gap-2">
-        {currentTodos.length === 0 ? (
-          <div 
-            onClick={() => setTodos({ ...todos, [selectedDate]: [{ id: Date.now(), text: "", completed: false }] })}
-            className={`text-sm cursor-text ${darkMode ? "text-slate-600" : "text-sky-300"}`}
-          >
-            {selectedDate}의 일기를 자유롭게 기록해 보세요...
+    <div className="w-full h-full flex flex-col font-sans">
+      <h2 className={`text-sm font-bold mb-3 ${darkMode ? "text-sky-400" : "text-sky-800"}`}>
+        Todo-list
+      </h2>
+
+      {/* 기존의 추가 입력창 */}
+      <form onSubmit={handleAddTodo} className="mb-4">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="새로운 할 일을 입력하고 Enter를 눌러 추가하세요"
+          className={`w-full text-xs p-2.5 border rounded-xl ${darkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-sky-100"}`}
+        />
+      </form>
+
+      {/* 리스트 영역 */}
+      <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto">
+        {currentTodos.map((todo) => (
+          <div key={todo.id} className="flex items-center gap-3">
+            <div className={`w-4 h-4 rounded border ${todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"}`} />
+            <input
+              ref={(el) => (inputRefs.current[todo.id] = el)}
+              type="text"
+              value={todo.text}
+              onChange={(e) => handleTodoChange(todo.id, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(e, todo.id)}
+              className="flex-1 bg-transparent outline-none text-xs text-slate-700"
+              placeholder="내용을 입력하세요..."
+            />
           </div>
-        ) : (
-          currentTodos.map((todo) => (
-            <div key={todo.id} className="flex items-center gap-3">
-              {/* 체크박스 */}
-              <button 
-                onClick={() => handleToggle(todo.id)}
-                className={`w-5 h-5 rounded border flex items-center justify-center ${
-                  todo.completed ? "bg-sky-500 border-sky-500" : "border-slate-300"
-                }`}
-              >
-                {todo.completed && <span className="text-white text-xs">✓</span>}
-              </button>
-              
-              {/* 텍스트 입력 영역 (다이어리 줄) */}
-              <input
-                type="text"
-                value={todo.text}
-                onChange={(e) => handleTextChange(todo.id, e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="내용을 입력하세요..."
-                className={`flex-1 bg-transparent border-none outline-none text-sm ${
-                  todo.completed ? "line-through text-slate-400" : (darkMode ? "text-slate-200" : "text-slate-700")
-                }`}
-              />
-            </div>
-          ))
-        )}
+        ))}
       </div>
     </div>
   );
