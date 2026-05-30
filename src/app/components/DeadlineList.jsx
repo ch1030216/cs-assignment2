@@ -6,18 +6,18 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
   const [newTitle, setNewTitle] = useState("");
   const [newDate, setNewDate] = useState("");
 
-  // 수정 기능을 위한 상태
-  const [editingId, setEditingId] = useState(null);
+  // 수정 상태 분리
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [editingDateId, setEditingDateId] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [editingDate, setEditingDate] = useState("");
   const editInputRef = useRef(null);
 
-  // 수정 모드 시 자동 포커스
   useEffect(() => {
-    if (editingId !== null && editInputRef.current) {
+    if ((editingTitleId !== null || editingDateId !== null) && editInputRef.current) {
       editInputRef.current.focus();
     }
-  }, [editingId]);
+  }, [editingTitleId, editingDateId]);
 
   const handleAddDeadline = (e) => {
     e.preventDefault();
@@ -35,12 +35,20 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
     setNewDate("");
   };
 
-  const handleSaveEdit = (id) => {
+  const handleSaveTitle = (id) => {
     const updated = deadlines.map((dl) =>
-      dl.id === id ? { ...dl, text: editingText, date: editingDate } : dl
+      dl.id === id ? { ...dl, text: editingText } : dl
     );
     setDeadlines(updated);
-    setEditingId(null);
+    setEditingTitleId(null);
+  };
+
+  const handleSaveDate = (id) => {
+    const updated = deadlines.map((dl) =>
+      dl.id === id ? { ...dl, date: editingDate } : dl
+    );
+    setDeadlines(updated);
+    setEditingDateId(null);
   };
 
   const handleToggleComplete = (id, e) => {
@@ -61,10 +69,13 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
     if (!selectedDate) return { text: "D-Day", isOverdue: false };
     const baseDate = new Date(selectedDate);
     baseDate.setHours(0, 0, 0, 0);
+
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
+
     const diffTime = target - baseDate;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
     if (diffDays === 0) return { text: "D-Day", isOverdue: false };
     if (diffDays < 0) return { text: `D+${Math.abs(diffDays)}`, isOverdue: true };
     return { text: `D-${diffDays}`, isOverdue: false };
@@ -80,25 +91,33 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
         ) : (
           [...deadlines]
             .sort((a, b) => new Date(a.date) - new Date(b.date))
+            // --- 필터링 로직 수정: 마감일이 오늘 포함 미래(diffDays >= 0)이거나, 완료되지 않은(overdue) 것만 표시 ---
             .filter((dl) => {
               const baseDate = new Date(selectedDate);
               baseDate.setHours(0, 0, 0, 0);
               const target = new Date(dl.date);
               target.setHours(0, 0, 0, 0);
               const diffDays = Math.ceil((target - baseDate) / (1000 * 60 * 60 * 24));
+              
+              // 오늘 포함 미래이거나, 완료되지 않은 마감일 지난 항목은 표시
               return diffDays >= 0 || !dl.completed;
             })
+            // --------------------------------------------------------------------------
             .map((dl) => {
               const dDayInfo = calculateDDay(dl.date);
-              const isEditing = editingId === dl.id;
-
+              
+              // 기본 스타일 (하늘색 테마)
               let badgeStyle = darkMode ? "bg-sky-950 text-sky-400 border-sky-800" : "bg-sky-100 text-sky-600 border-sky-200";
               let textStyle = dl.completed ? "line-through text-slate-500" : (darkMode ? "text-slate-200" : "text-sky-900");
 
+              // --- 마감일이 지난(D+) 항목 스타일 수정 ---
               if (dDayInfo.isOverdue && !dl.completed) {
+                // 마감일이 지났고 완료되지 않은 경우 (보색 주황색 테마)
                 badgeStyle = darkMode ? "bg-orange-950 text-orange-300 border-orange-900" : "bg-orange-100 text-orange-600 border-orange-200";
+                // 텍스트는 좀 더 눈에 띄게
                 textStyle = darkMode ? "text-slate-100" : "text-sky-900";
               }
+              // ----------------------------------------
 
               return (
                 <div
@@ -106,57 +125,69 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                   className={`flex items-center justify-between border rounded-xl p-2 shadow-sm group transition-all ${
                     dl.completed
                       ? "opacity-40"
-                      : darkMode
-                      ? "bg-slate-800 border-slate-700/60 hover:border-sky-800/30"
-                      : "bg-white border-sky-100/80 hover:border-sky-300"
+                      : darkMode 
+                        ? "bg-slate-800 border-slate-700/60 hover:border-slate-600" 
+                        : "bg-white border-sky-100/80 hover:border-sky-300"
                   }`}
                 >
                   <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
-                    <input
-                      type="checkbox"
-                      checked={dl.completed || false}
-                      onChange={(e) => handleToggleComplete(dl.id, e)}
-                      className={`w-4 h-4 rounded border appearance-none transition-colors cursor-pointer checked:bg-sky-500 ${
-                        darkMode ? "bg-slate-700 border-slate-600" : "bg-white border-sky-300"
-                      }`}
-                    />
-
-                    {isEditing ? (
-                      <div className="flex gap-2 w-full">
-                        <input
-                          ref={editInputRef}
-                          value={editingText}
-                          onChange={(e) => setEditingText(e.target.value)}
-                          className={`text-xs w-full bg-transparent border-b focus:outline-none ${darkMode ? "text-slate-100 border-sky-500" : "text-sky-900 border-sky-400"}`}
-                        />
-                        <input
-                          type="date"
-                          value={editingDate}
-                          onChange={(e) => setEditingDate(e.target.value)}
-                          onBlur={() => handleSaveEdit(dl.id)}
-                          onKeyDown={(e) => e.key === "Enter" && handleSaveEdit(dl.id)}
-                          className={`text-xs bg-transparent border-b focus:outline-none ${darkMode ? "text-slate-100 border-sky-500" : "text-sky-900 border-sky-400"}`}
-                        />
-                      </div>
+                    <div className="relative flex items-center justify-center flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={dl.completed || false}
+                        onChange={(e) => handleToggleComplete(dl.id, e)}
+                        className={`w-4 h-4 rounded border appearance-none transition-colors cursor-pointer checked:bg-sky-500 ${
+                          darkMode 
+                            ? "bg-slate-700 border-slate-600 checked:border-sky-500" 
+                            : "bg-white border-sky-300 checked:border-sky-500"
+                        }`}
+                      />
+                      {dl.completed && (
+                        <span className="absolute text-white text-[10px] pointer-events-none font-bold">✓</span>
+                      )}
+                    </div>
+                    
+                    {/* 날짜 수정 로직 */}
+                    {editingDateId === dl.id ? (
+                      <input
+                        ref={editInputRef}
+                        type="date"
+                        value={editingDate}
+                        onChange={(e) => setEditingDate(e.target.value)}
+                        onBlur={() => handleSaveDate(dl.id)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSaveDate(dl.id)}
+                        className={`text-[10px] w-20 bg-transparent border-b border-sky-500 focus:outline-none ${darkMode ? "text-slate-100" : "text-sky-900"}`}
+                      />
                     ) : (
-                      <>
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 border cursor-pointer ${badgeStyle}`}
-                          onClick={() => { setEditingId(dl.id); setEditingText(dl.text); setEditingDate(dl.date); }}
-                        >
-                          {dDayInfo.text}
-                        </span>
-                        <p
-                          className={`text-xs font-medium truncate flex-1 cursor-pointer hover:opacity-70 ${textStyle}`}
-                          onClick={() => { setEditingId(dl.id); setEditingText(dl.text); setEditingDate(dl.date); }}
-                          title={dl.text}
-                        >
-                          {dl.text}
-                        </p>
-                      </>
+                      <span 
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0 border cursor-pointer ${badgeStyle}`}
+                        onClick={() => { setEditingDateId(dl.id); setEditingDate(dl.date); }}
+                      >
+                        {dDayInfo.text}
+                      </span>
+                    )}
+                    
+                    {/* 제목 수정 로직 */}
+                    {editingTitleId === dl.id ? (
+                      <input
+                        ref={editInputRef}
+                        value={editingText}
+                        onChange={(e) => setEditingText(e.target.value)}
+                        onBlur={() => handleSaveTitle(dl.id)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSaveTitle(dl.id)}
+                        className={`text-xs flex-1 bg-transparent border-b border-sky-500 focus:outline-none ${darkMode ? "text-slate-100" : "text-sky-900"}`}
+                      />
+                    ) : (
+                      <p 
+                        className={`text-xs font-medium truncate flex-1 cursor-pointer ${textStyle}`} 
+                        title={dl.text}
+                        onClick={() => { setEditingTitleId(dl.id); setEditingText(dl.text); }}
+                      >
+                        {dl.text}
+                      </p>
                     )}
                   </div>
-
+                  
                   <button
                     type="button"
                     onClick={(e) => handleDeleteDeadline(dl.id, e)}
@@ -177,7 +208,9 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="마감일 제목을 입력하세요"
           className={`w-full text-xs p-2.5 border rounded-xl focus:outline-none shadow-sm font-medium ${
-            darkMode ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-sky-500" : "bg-white border-sky-100 text-sky-800 focus:border-sky-400"
+            darkMode 
+              ? "bg-slate-800 border-slate-700 text-slate-100 focus:border-sky-500 placeholder-slate-500" 
+              : "bg-white border-sky-100 text-sky-800 focus:border-sky-400 placeholder-sky-300"
           }`}
         />
         <div className="flex gap-2">
@@ -186,13 +219,17 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
             value={newDate}
             onChange={(e) => setNewDate(e.target.value)}
             className={`flex-1 text-xs p-2 border rounded-xl focus:outline-none shadow-sm font-medium ${
-              darkMode ? "bg-slate-800 border-slate-700 text-slate-200 focus:border-sky-500" : "bg-white border-sky-100 text-sky-700 focus:border-sky-400"
+              darkMode 
+                ? "bg-slate-800 border-slate-700 text-slate-200 focus:border-sky-500" 
+                : "bg-white border-sky-100 text-sky-700 focus:border-sky-400"
             }`}
           />
           <button
             type="submit"
             className={`text-xs font-bold px-3.5 rounded-xl shadow-md transition-all active:scale-95 flex-shrink-0 ${
-              darkMode ? "bg-sky-600 hover:bg-sky-500 text-white" : "bg-sky-500 hover:bg-sky-600 text-white"
+              darkMode
+                ? "bg-sky-600 hover:bg-sky-500 text-white"
+                : "bg-sky-500 hover:bg-sky-600 text-white"
             }`}
           >
             추가
