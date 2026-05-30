@@ -62,7 +62,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
         ) : (
           [...deadlines]
             .sort((a, b) => new Date(a.date) - new Date(b.date))
-            // --- 필터링 로직: 완료 여부 무관, 마감일이 오늘 포함 미래인 경우만 표시 ---
+            // --- 필터링 로직 수정: 마감일이 오늘 포함 미래(diffDays >= 0)이거나, 완료되지 않은(overdue) 것만 표시 ---
             .filter((dl) => {
               const baseDate = new Date(selectedDate);
               baseDate.setHours(0, 0, 0, 0);
@@ -70,13 +70,25 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
               target.setHours(0, 0, 0, 0);
               const diffDays = Math.ceil((target - baseDate) / (1000 * 60 * 60 * 24));
               
-              return diffDays >= 0;
+              // 오늘 포함 미래이거나, 완료되지 않은 마감일 지난 항목은 표시
+              return diffDays >= 0 || !dl.completed;
             })
             // --------------------------------------------------------------------------
             .map((dl) => {
               const dDayInfo = calculateDDay(dl.date);
               
+              // 기본 스타일 (하늘색 테마)
               let badgeStyle = darkMode ? "bg-sky-950 text-sky-400 border-sky-800" : "bg-sky-100 text-sky-600 border-sky-200";
+              let textStyle = dl.completed ? "line-through text-slate-500" : (darkMode ? "text-slate-200" : "text-sky-900");
+
+              // --- 마감일이 지난(D+) 항목 스타일 수정 ---
+              if (dDayInfo.isOverdue && !dl.completed) {
+                // 마감일이 지났고 완료되지 않은 경우 (보색 주황색 테마)
+                badgeStyle = darkMode ? "bg-orange-950 text-orange-300 border-orange-900" : "bg-orange-100 text-orange-600 border-orange-200";
+                // 텍스트는 좀 더 눈에 띄게
+                textStyle = darkMode ? "text-slate-100" : "text-sky-900";
+              }
+              // ----------------------------------------
 
               return (
                 <div
@@ -110,11 +122,7 @@ export default function DeadlineList({ selectedDate, deadlines = [], setDeadline
                       {dDayInfo.text}
                     </span>
                     
-                    <p className={`text-xs font-medium truncate flex-1 ${
-                      dl.completed 
-                        ? "line-through text-slate-500" 
-                        : darkMode ? "text-slate-200" : "text-sky-900"
-                    }`} title={dl.text}>
+                    <p className={`text-xs font-medium truncate flex-1 ${textStyle}`} title={dl.text}>
                       {dl.text}
                     </p>
                   </div>
