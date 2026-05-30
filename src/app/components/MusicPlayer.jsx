@@ -88,7 +88,7 @@ export default function MusicPlayer({ darkMode, selectedDate }) {
       {currentMusic.id && (
         <iframe
           className="hidden"
-          src={`https://www.youtube.com/embed/${currentMusic.id}?autoplay=${isPlaying ? 1 : 0}&enablejsapi=1`}
+          src={`https://www.youtube.com/embed/${currentMusic.id}?autoplay=${isPlaying ? 1 : 0}&loop=1&playlist=${currentMusic.id}&enablejsapi=1`}
           allow="autoplay"
         ></iframe>
       )}
