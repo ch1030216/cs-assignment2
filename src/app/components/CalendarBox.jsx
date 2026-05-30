@@ -26,13 +26,11 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
   };
 
   return (
-    // 전체 컨테이너에 배경색 고정 (다크: slate-950, 라이트: white)
-    <div className={`w-full h-full flex flex-col justify-between p-1 select-none font-sans ${darkMode ? "bg-slate-950" : "bg-white"}`}>
+    <div className={`w-full h-full flex flex-col justify-between p-1 select-none font-sans ${darkMode ? "bg-slate-950 text-slate-200" : "bg-white text-slate-800"}`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className={`text-base font-bold ${darkMode ? "text-sky-400" : "text-sky-800"}`}>
           Calendar
         </h2>
-        {/* 헤더 배경색 반전 */}
         <div className={`flex items-center gap-1.5 rounded-xl p-1 ${darkMode ? "bg-slate-900" : "bg-sky-100/70"}`}>
           <button type="button" onClick={prevMonth} className={`p-1 rounded-lg text-[10px] font-bold transition-colors ${darkMode ? "text-sky-400 hover:bg-slate-800" : "text-sky-700 hover:bg-white"}`}>◀</button>
           <span className={`text-[11px] font-bold px-1 ${darkMode ? "text-slate-200" : "text-sky-800"}`}>{year}년 {month + 1}월</span>
@@ -67,16 +65,15 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
             <div
               key={`day-${day}`}
               onClick={() => handleDateClick(day)}
-              // 날짜 셀: 투명도 제거하고 불투명한 bg- 사용
               className={`border rounded-xl p-1 flex flex-col justify-between items-start cursor-pointer transition-all min-h-[62px] relative ${
                 isSelected
                   ? "bg-sky-500 text-white border-sky-500 shadow-md scale-[1.01] z-10"
                   : darkMode
-                    ? "bg-slate-900 text-slate-300 border-slate-700 hover:bg-slate-800"
-                    : "bg-white text-slate-800 border-slate-200 hover:bg-slate-50"
+                    ? "bg-slate-900/50 text-slate-400 border-slate-800 hover:border-slate-700 hover:bg-slate-800/50"
+                    : "bg-white text-slate-800 border-slate-100 hover:bg-sky-50/50"
               }`}
             >
-              <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${isSelected ? "text-white" : darkMode ? "text-slate-400" : "text-slate-500"}`}>
+              <span className={`text-[11px] font-bold px-1 py-0.5 rounded ${isSelected ? "text-white" : ""}`}>
                 {day}
               </span>
 
@@ -90,8 +87,8 @@ export default function CalendarBox({ selectedDate, setSelectedDate, deadlineDat
                         : dl.completed
                           ? "opacity-40 line-through"
                           : darkMode 
-                            ? "bg-slate-800 text-sky-400 border border-slate-700" 
-                            : "bg-sky-100 text-sky-600 border border-sky-200"
+                            ? "bg-sky-950/50 text-sky-400 border border-sky-900/50" 
+                            : "bg-sky-100 text-sky-600 border border-sky-200/50"
                     }`}
                   >
                     📌 {dl.text}
