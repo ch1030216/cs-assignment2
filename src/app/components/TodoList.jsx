@@ -1,11 +1,17 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 export default function TodoList({ selectedDate, todos, setTodos, darkMode }) {
-  // 데이터가 없거나 로딩 중일 경우를 완전히 차단합니다.
-  if (!todos) return <div className="p-4 text-xs">로딩 중...</div>;
-  
-  // 안전하게 데이터 접근
-  const currentTodos = todos[selectedDate] || [];
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null; // 서버 사이드 빌드 시 아무것도 렌더링하지 않음
+
+  const currentTodos = (todos && todos[selectedDate]) || [];
 
   return (
     <div className="mt-4">
