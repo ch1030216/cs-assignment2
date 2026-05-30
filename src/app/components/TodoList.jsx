@@ -68,7 +68,7 @@ export default function TodoList({ selectedDate, todos = {}, setTodos, darkMode 
             onClick={() => updateTodos([{id: Date.now(), text: "", completed: false}])}
             className={`text-xs ${darkMode ? "text-slate-500" : "text-sky-300"}`}
           >
-            + 새로운 할 일을 기록하세요
+            새로운 할 일을 기록하세요
           </button>
         )}
       </div>
