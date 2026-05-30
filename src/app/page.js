@@ -9,7 +9,7 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [selectedDate, setSelectedDate] = useState("2026-05-30");
   const [diaryText, setDiaryText] = useState("");
-  // ⭐️ 데이터 초기값을 확실하게 설정
+  // ⭐️ 핵심: 키를 미리 정의하여 undefined 참조를 방지
   const [todos, setTodos] = useState({ "2026-05-30": [] });
   const [deadlines, setDeadlines] = useState([]);
 
